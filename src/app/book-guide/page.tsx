@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { FaShieldAlt, FaArrowRight } from "react-icons/fa";
 import PageBanner from "@/components/booking/PageBanner";
 import { dbConnect } from "@/lib/mongodb";
 import { CityMaster, PackageTitleMaster } from "@/models";
@@ -70,7 +71,7 @@ export default async function BookGuidePage({
         </div>
 
         {activeCityName && (
-          <h2 className="text-2xl font-extrabold text-slate-900 mb-6">{activeCityName}</h2>
+          <h2 className="font-display text-2xl font-semibold text-slate-900 mb-6">{activeCityName}</h2>
         )}
 
         {packages.length === 0 ? (
@@ -81,7 +82,7 @@ export default async function BookGuidePage({
               <Link
                 key={p.PKG_ID}
                 href={`/packages/${p.PKG_ID}`}
-                className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition-all group"
+                className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col"
               >
                 <div className="relative aspect-[4/3] bg-slate-100">
                   <Image
@@ -91,10 +92,25 @@ export default async function BookGuidePage({
                     sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
+                  <span className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/95 backdrop-blur text-gw-brand text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
+                    <FaShieldAlt /> Verified Guide
+                  </span>
                 </div>
-                <div className="p-5">
-                  <h3 className="font-bold text-slate-900 mb-2">{p.TITLE_NAME}</h3>
-                  <p className="text-gw-brand font-extrabold">₹{p.PKG_AMOUNT.toLocaleString("en-IN")}/-</p>
+                <div className="p-5 flex flex-col flex-grow">
+                  <h3 className="font-bold text-slate-900 mb-3 leading-snug flex-grow">{p.TITLE_NAME}</h3>
+                  <div className="flex items-end justify-between pt-3 border-t border-slate-100">
+                    <div>
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                        Starting from
+                      </span>
+                      <span className="text-gw-brand font-extrabold text-lg">
+                        ₹{p.PKG_AMOUNT.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <span className="flex items-center gap-1 text-xs font-bold text-gw-red uppercase tracking-wide">
+                      View <FaArrowRight className="text-[10px] group-hover:translate-x-0.5 transition-transform" />
+                    </span>
+                  </div>
                 </div>
               </Link>
             ))}

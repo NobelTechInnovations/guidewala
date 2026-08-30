@@ -21,6 +21,7 @@ const SERVICES = [
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/about-us", label: "About Us" },
+  { href: "/tour-packages", label: "Tour Packages" },
 ];
 
 export default function Header() {
@@ -90,9 +91,12 @@ export default function Header() {
               </div>
             </div>
 
-            <Link href="/careers" className="nav-link">
-              Careers
+            <Link href="/blog" className="nav-link">
+              Blog
             </Link>
+            {/* <Link href="/careers" className="nav-link">
+              Careers
+            </Link> */}
             <Link href="/contact-us" className="nav-link">
               Contact
             </Link>
@@ -175,6 +179,15 @@ export default function Header() {
                     ))}
                   </ul>
                 )}
+              </li>
+              <li>
+                <Link
+                  href="/blog"
+                  className="block py-2.5 text-gray-700"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Blog
+                </Link>
               </li>
               <li>
                 <Link

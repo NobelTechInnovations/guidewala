@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
-import { FaUserTie, FaTaxi, FaHotel, FaCertificate, FaWallet, FaHeart, FaHandshake } from "react-icons/fa";
-import PromoCarousel from "@/components/home/PromoCarousel";
+import { FaUserTie, FaTaxi, FaHotel, FaCertificate, FaWallet, FaHeart, FaHandshake, FaStar, FaShieldAlt } from "react-icons/fa";
+import FeaturedTours from "@/components/home/FeaturedTours";
 import CouponsSection from "@/components/home/CouponsSection";
 
 const DESTINATIONS = [
@@ -77,18 +77,35 @@ export default function Home() {
           <div className="inline-block bg-white/20 backdrop-blur-md border border-white/40 px-4 py-1 md:px-5 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase mb-4 md:mb-6 shadow-lg">
             #1 Trusted Guide Network
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-extrabold mb-4 md:mb-6 leading-tight [text-shadow:0_2px_15px_rgba(0,0,0,0.6)]">
+          <h1 className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-semibold mb-4 md:mb-6 leading-tight [text-shadow:0_2px_15px_rgba(0,0,0,0.6)] text-balance">
             Discover India, <br />
-            <span className="text-green-400 drop-shadow-md">Unfiltered.</span>
+            <span className="text-green-400 drop-shadow-md italic">Unfiltered.</span>
           </h1>
-          <p className="text-base sm:text-lg md:text-2xl mb-8 md:mb-10 max-w-3xl mx-auto drop-shadow-md font-medium px-2 [text-shadow:0_2px_15px_rgba(0,0,0,0.6)]">
+          <p className="text-base sm:text-lg md:text-2xl mb-6 md:mb-8 max-w-3xl mx-auto drop-shadow-md font-medium px-2 [text-shadow:0_2px_15px_rgba(0,0,0,0.6)]">
             Connect with Government Approved Local Guides, Book reliable taxis, and stay in a wide
             choice of hotels.
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm md:text-base font-semibold [text-shadow:0_1px_8px_rgba(0,0,0,0.5)]">
+            <span className="flex items-center gap-1.5">
+              <span className="flex text-gw-yellow text-xs gap-0.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <FaStar key={i} />
+                ))}
+              </span>
+              4.8 Rated Service
+            </span>
+            <span className="flex items-center gap-1.5">
+              <FaShieldAlt className="text-green-400" /> 100% Verified Guides
+            </span>
+            <span className="flex items-center gap-1.5">
+              <FaHandshake className="text-green-400" /> 10,000+ Happy Travelers
+            </span>
+          </div>
         </div>
       </section>
 
-      <PromoCarousel />
+      <FeaturedTours />
 
       {/* Core services */}
       <section className="py-16 md:py-20 bg-slate-50">

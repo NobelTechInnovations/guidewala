@@ -3,8 +3,8 @@ import Link from "next/link";
 import {
   FaFacebookF,
   FaInstagram,
-  FaTwitter,
-  FaLinkedinIn,
+  FaYoutube,
+  FaWhatsapp,
   FaMapMarkerAlt,
   FaPhoneAlt,
   FaEnvelope,
@@ -12,7 +12,9 @@ import {
 
 const COMPANY_LINKS = [
   { href: "/about-us", label: "About Us" },
-  { href: "/careers", label: "Careers" },
+  { href: "/tour-packages", label: "Tour Packages" },
+  { href: "/blog", label: "Blog" },
+  // { href: "/careers", label: "Careers" },
   { href: "/contact-us", label: "Contact Us" },
   { href: "/privacy-policy", label: "Privacy Policy" },
   { href: "/terms-and-conditions", label: "Terms & Conditions" },
@@ -26,10 +28,10 @@ const SERVICE_LINKS = [
 ];
 
 const SOCIAL_LINKS = [
-  { href: "#", Icon: FaFacebookF, label: "Facebook" },
-  { href: "#", Icon: FaInstagram, label: "Instagram" },
-  { href: "#", Icon: FaTwitter, label: "Twitter" },
-  { href: "#", Icon: FaLinkedinIn, label: "LinkedIn" },
+  { href: "https://www.facebook.com/guidewala1", Icon: FaFacebookF, label: "Facebook" },
+  { href: "https://www.instagram.com/guidewala", Icon: FaInstagram, label: "Instagram" },
+  { href: "https://www.youtube.com/@guidewalaDekhoRajasthan", Icon: FaYoutube, label: "YouTube" },
+  { href: "https://wa.me/919829185267", Icon: FaWhatsapp, label: "WhatsApp" },
 ];
 
 export default function Footer() {
@@ -53,7 +55,14 @@ export default function Footer() {
             </p>
             <div className="flex gap-3">
               {SOCIAL_LINKS.map(({ href, Icon, label }) => (
-                <a key={label} href={href} aria-label={label} className="social-icon">
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="social-icon"
+                >
                   <Icon />
                 </a>
               ))}

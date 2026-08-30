@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
       // Guide photos / license scans are served from the admin panel domain —
       // matches the source app's `imgPath` app setting.
       { protocol: "https", hostname: "admin.guidewala.co.in" },
+      // Team photos / package imagery pulled from the guidewala.in WordPress site.
+      { protocol: "https", hostname: "guidewala.in" },
     ],
   },
 
@@ -22,7 +24,7 @@ const nextConfig: NextConfig = {
       { source: "/book-guide.aspx", destination: "/book-guide", permanent: true },
       { source: "/taxi-service.aspx", destination: "/taxi-service", permanent: true },
       { source: "/hotel-booing.aspx", destination: "/hotel-booking", permanent: true },
-      { source: "/careers.aspx", destination: "/careers", permanent: true },
+      // { source: "/careers.aspx", destination: "/careers", permanent: true },
       { source: "/contact-us.aspx", destination: "/contact-us", permanent: true },
       { source: "/guide-registration.aspx", destination: "/guide-registration", permanent: true },
       { source: "/privacy-policy.aspx", destination: "/privacy-policy", permanent: true },

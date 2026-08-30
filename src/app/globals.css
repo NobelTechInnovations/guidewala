@@ -1,7 +1,9 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme inline {
   --font-sans: var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
 
   /* Guidewala brand tokens — matched to live site (Guidewala.Master) */
   --color-gw-brand: #009045; /* Logo Green */
