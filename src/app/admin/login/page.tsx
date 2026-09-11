@@ -23,7 +23,10 @@ function LoginForm() {
         body: JSON.stringify({ password }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Login failed.");
-      router.push(params.get("next") || "/admin/blog");
+      // On the admin subdomain, paths are clean (no "/admin" prefix — the
+      // middleware maps them internally); on the main domain they need it.
+      const isAdminHost = typeof window !== "undefined" && window.location.host.startsWith("admin.");
+      router.push(params.get("next") || (isAdminHost ? "/dashboard" : "/admin/dashboard"));
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed.");
@@ -41,7 +44,7 @@ function LoginForm() {
             <FaLock />
           </div>
           <h1 className="font-display text-xl font-semibold text-slate-900">Admin Login</h1>
-          <p className="text-sm text-slate-500">Manage the Guidewala blog</p>
+          <p className="text-sm text-slate-500">Guides, vendors, packages, bookings &amp; blog</p>
         </div>
 
         {error && (

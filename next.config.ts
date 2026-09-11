@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+
+  // Next's dev server silently drops requests whose Host header isn't
+  // recognized (DNS-rebinding protection) — the Android emulator/physical
+  // device reaches this server via the Mac's LAN IP, not localhost, so that
+  // origin needs to be allow-listed explicitly for the mobile app to work.
+  allowedDevOrigins: ["192.168.1.3", "10.0.2.2"],
   images: {
     remotePatterns: [
       // Guide photos / license scans are served from the admin panel domain —
@@ -14,6 +20,21 @@ const nextConfig: NextConfig = {
       // Team photos / package imagery pulled from the guidewala.in WordPress site.
       { protocol: "https", hostname: "guidewala.in" },
     ],
+  },
+
+  // Allow the mobile app (and its web preview, on a different origin/port
+  // in dev) to call these read/write JSON endpoints directly.
+  async headers() {
+    return [
+      {
+        source: "/api/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Methods", value: "GET,POST,PUT,DELETE,OPTIONS" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type" },
+        ],
+      },
+    ];
   },
 
   // Preserve SEO / bookmarks for the old .aspx URLs from the ASP.NET site.
