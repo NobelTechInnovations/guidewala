@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { FaSearch, FaEye } from "react-icons/fa";
+import { FaSearch, FaEye, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { PageHeader, Card, Badge, EmptyState, Loading, inputCls } from "@/components/admin/ui";
 
 type Guide = {
@@ -28,6 +28,7 @@ export default function GuideListPage() {
   const [guides, setGuides] = useState<Guide[] | null>(null);
   const [city, setCity] = useState("");
   const [status, setStatus] = useState("ALL");
+  const [busyId, setBusyId] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     const params = new URLSearchParams();
@@ -42,6 +43,20 @@ export default function GuideListPage() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const setGuideStatus = async (guideId: number, newStatus: string) => {
+    setBusyId(guideId);
+    try {
+      await fetch(`/api/admin/guides/${guideId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      await load();
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
@@ -106,8 +121,28 @@ export default function GuideListPage() {
                     <td className="px-5 py-3 text-slate-400">
                       {g.REGISTRED_ON ? new Date(g.REGISTRED_ON).toLocaleDateString() : "—"}
                     </td>
-                    <td className="px-5 py-3 text-right">
-                      <Link href={`/admin/guides/${g.GUIDE_ID}`} className="text-gw-brand p-2 inline-block">
+                    <td className="px-5 py-3 text-right whitespace-nowrap">
+                      {g.STATUS !== "A" && (
+                        <button
+                          disabled={busyId === g.GUIDE_ID}
+                          onClick={() => setGuideStatus(g.GUIDE_ID, "A")}
+                          title="Accept"
+                          className="text-green-600 hover:bg-green-50 p-2 rounded-lg inline-block disabled:opacity-50"
+                        >
+                          <FaCheckCircle />
+                        </button>
+                      )}
+                      {g.STATUS !== "R" && (
+                        <button
+                          disabled={busyId === g.GUIDE_ID}
+                          onClick={() => setGuideStatus(g.GUIDE_ID, "R")}
+                          title="Reject"
+                          className="text-red-500 hover:bg-red-50 p-2 rounded-lg inline-block disabled:opacity-50"
+                        >
+                          <FaTimesCircle />
+                        </button>
+                      )}
+                      <Link href={`/admin/guides/${g.GUIDE_ID}`} className="text-gw-brand hover:bg-green-50 p-2 rounded-lg inline-block" title="View">
                         <FaEye />
                       </Link>
                     </td>

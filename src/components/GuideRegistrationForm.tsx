@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, FormEvent } from "react";
-import { FaCheckCircle, FaTimesCircle, FaArrowRight, FaArrowLeft, FaPlus } from "react-icons/fa";
+import { useState, FormEvent, KeyboardEvent } from "react";
+import { FaCheckCircle, FaTimesCircle, FaArrowRight, FaArrowLeft, FaPlus, FaTimes } from "react-icons/fa";
 
 const STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Delhi", "Goa",
@@ -21,7 +21,11 @@ const LANGUAGES = [
   "Mandarin", "Japanese", "Arabic", "Korean", "Gujarati", "Tamil", "Bengali",
 ];
 
-const CITIES = ["Jaipur", "Delhi", "Agra"];
+// Quick-add suggestions shown under the free-text city input below — a
+// starting point, not a limit, since guides can type any city they like.
+const SUGGESTED_CITIES = [
+  "Jaipur", "Delhi", "Agra", "Udaipur", "Jodhpur", "Jaisalmer", "Pushkar", "Mumbai", "Goa", "Varanasi",
+];
 
 const STEPS = [
   { label: "You" },
@@ -63,6 +67,80 @@ function MultiSelectChips({
   );
 }
 
+function CityTagInput({
+  selected,
+  onAdd,
+  onRemove,
+}: {
+  selected: string[];
+  onAdd: (v: string) => void;
+  onRemove: (v: string) => void;
+}) {
+  const [draft, setDraft] = useState("");
+
+  const commit = () => {
+    const value = draft.trim();
+    if (value) onAdd(value);
+    setDraft("");
+  };
+
+  const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      commit();
+    } else if (e.key === "Backspace" && draft === "" && selected.length > 0) {
+      onRemove(selected[selected.length - 1]);
+    }
+  };
+
+  const suggestions = SUGGESTED_CITIES.filter((c) => !selected.includes(c));
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-2 w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 focus-within:ring-2 focus-within:ring-gw-brand/30 focus-within:border-gw-brand transition-all">
+        {selected.map((city) => (
+          <span
+            key={city}
+            className="flex items-center gap-1.5 bg-gw-brand text-white text-sm font-medium pl-3 pr-2 py-1.5 rounded-full"
+          >
+            {city}
+            <button
+              type="button"
+              onClick={() => onRemove(city)}
+              className="hover:bg-white/20 rounded-full p-0.5"
+              aria-label={`Remove ${city}`}
+            >
+              <FaTimes className="text-[10px]" />
+            </button>
+          </span>
+        ))}
+        <input
+          className="flex-1 min-w-[140px] bg-transparent outline-none text-base text-slate-700 py-1.5"
+          placeholder={selected.length ? "Add another city…" : "Type a city and press Enter"}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={onKeyDown}
+          onBlur={commit}
+        />
+      </div>
+      {suggestions.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-3">
+          {suggestions.map((city) => (
+            <button
+              key={city}
+              type="button"
+              onClick={() => onAdd(city)}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border border-slate-300 text-slate-500 hover:border-gw-brand hover:text-gw-brand transition-colors"
+            >
+              <FaPlus className="text-[9px]" /> {city}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const inputClass =
   "w-full bg-slate-50 border border-slate-300 text-slate-700 py-3.5 px-4 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-gw-brand/30 focus:border-gw-brand transition-all";
 
@@ -91,6 +169,10 @@ export default function GuideRegistrationForm() {
 
   const toggle = (arr: string[], setArr: (v: string[]) => void, v: string) =>
     setArr(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+
+  const addCity = (city: string) =>
+    setExpCities((prev) => (prev.some((c) => c.toLowerCase() === city.toLowerCase()) ? prev : [...prev, city]));
+  const removeCity = (city: string) => setExpCities((prev) => prev.filter((c) => c !== city));
 
   const validateStep = (s: number) => {
     if (s === 0) {
@@ -377,7 +459,7 @@ export default function GuideRegistrationForm() {
             <label className="block text-sm font-semibold text-slate-700 mb-3">
               Which cities do you have guiding experience in? <span className="text-red-500">*</span>
             </label>
-            <MultiSelectChips options={CITIES} selected={expCities} onToggle={(v) => toggle(expCities, setExpCities, v)} />
+            <CityTagInput selected={expCities} onAdd={addCity} onRemove={removeCity} />
           </div>
         </div>
       )}
