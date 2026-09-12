@@ -15,6 +15,8 @@ import {
   FaTaxi,
   FaBed,
   FaEnvelopeOpenText,
+  FaAddressCard,
+  FaMailBulk,
   FaSignOutAlt,
   FaBars,
   FaTimes,
@@ -35,8 +37,13 @@ const NAV: NavGroup[] = [
       { href: "/admin/bookings/guide", label: "Guide Bookings", icon: FaBook },
       { href: "/admin/bookings/taxi", label: "Taxi Bookings", icon: FaTaxi },
       { href: "/admin/bookings/hotel", label: "Hotel Bookings", icon: FaBed },
+      { href: "/admin/contact-inquiries", label: "Contact Inquiries", icon: FaAddressCard },
       { href: "/admin/leads", label: "Coupon Leads", icon: FaEnvelopeOpenText },
     ],
+  },
+  {
+    title: "Settings",
+    items: [{ href: "/admin/email-templates", label: "Email Templates", icon: FaMailBulk }],
   },
   {
     title: "Guide Master",

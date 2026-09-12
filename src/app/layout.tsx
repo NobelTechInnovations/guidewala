@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Fraunces } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import CouponPopupProvider from "@/components/CouponPopup";
+import SiteChrome from "@/components/SiteChrome";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -32,11 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
       <body className="antialiased flex flex-col min-h-screen">
-        <CouponPopupProvider>
-          <Header />
-          <div className="flex-grow">{children}</div>
-          <Footer />
-        </CouponPopupProvider>
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );

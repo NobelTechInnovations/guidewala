@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken, COOKIE_NAME } from "@/lib/adminAuth";
+import { verifyVendorSessionToken, COOKIE_NAME as VENDOR_COOKIE_NAME } from "@/lib/vendorAuth";
 
 const ADMIN_HOST_PREFIX = "admin.";
 const PUBLIC_ASSET_PREFIXES = ["/img/", "/assets/", "/uploads/"];
@@ -53,6 +54,27 @@ export async function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
     url.pathname = logicalPath;
     return NextResponse.rewrite(url);
+  }
+
+  // Vendor self-service portal — separate login/session from the admin
+  // panel, stays on the main domain at /vendor/* (no subdomain).
+  const isVendorLoginPage = pathname === "/vendor/login";
+  const isVendorArea = pathname.startsWith("/vendor");
+  const isVendorApi = pathname.startsWith("/api/vendor") && pathname !== "/api/vendor/login";
+
+  if ((isVendorArea && !isVendorLoginPage) || isVendorApi) {
+    const token = req.cookies.get(VENDOR_COOKIE_NAME)?.value;
+    const session = await verifyVendorSessionToken(token);
+
+    if (!session) {
+      if (isVendorApi) {
+        return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+      }
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/vendor/login";
+      loginUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   return NextResponse.next();

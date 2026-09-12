@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import { PkgBookingDetails } from "@/models";
 import { formatBookingId } from "@/lib/bookingId";
-import { sendMailSafe } from "@/lib/mailer";
+import { sendTemplateMail } from "@/lib/emailTemplates";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -66,36 +66,23 @@ export async function POST(req: NextRequest) {
   });
 
   const notifyTo = process.env.SEND_PKG_BOOKING_TO || "booking@guidewala.co.in";
-  await sendMailSafe({
-    to: notifyTo,
-    subject: `New Guide Booking — ${bookingId}`,
-    html: `
-      <h3>New Guide Booking Request</h3>
-      <p><strong>Booking ID:</strong> ${bookingId}</p>
-      <p><strong>Package ID:</strong> ${pkgId} &nbsp; <strong>Amount:</strong> ₹${bookingAmount}</p>
-      <p><strong>Name:</strong> ${custName}</p>
-      <p><strong>Phone:</strong> ${phoneNo} ${whatsAppNo ? `(alt: ${whatsAppNo})` : ""}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Date of Sightseeing:</strong> ${dateOfSightseeing} at ${timeOfReporting}</p>
-      <p><strong>Hotel of Reporting:</strong> ${reportingHotel || "—"}</p>
-      <p><strong>Guide Language:</strong> ${guideLanguage}</p>
-      <p><strong>Passengers:</strong> ${numberOfPersons}</p>
-      <p><strong>Existing Customer:</strong> ${existingCustomer === "Y" ? "Yes" : "No"}</p>
-      <p><strong>Message:</strong> ${message || "—"}</p>
-    `,
+
+  await sendTemplateMail("GUIDE_BOOKING_ADMIN", notifyTo, {
+    bookingId,
+    pkgId,
+    bookingAmount,
+    name: custName,
+    phone: whatsAppNo ? `${phoneNo} (alt: ${whatsAppNo})` : phoneNo,
+    email,
+    dateOfSightseeing,
+    timeOfReporting,
+    reportingHotel,
+    guideLanguage,
+    numberOfPersons,
+    message,
   });
 
-  await sendMailSafe({
-    to: String(email),
-    subject: `Guidewala booking received — ${bookingId}`,
-    html: `
-      <p>Hi ${custName},</p>
-      <p>Thanks for booking with Guidewala! Your booking reference is <strong>${bookingId}</strong>.</p>
-      <p>Our team will confirm your guide shortly. Payment is collected in advance via Google Pay / UPI —
-      we'll share the details on WhatsApp.</p>
-      <p>— Team Guidewala</p>
-    `,
-  });
+  await sendTemplateMail("GUIDE_BOOKING_CUSTOMER", String(email), { name: custName, email, bookingId });
 
   return NextResponse.json({ ok: true, bookingId });
 }

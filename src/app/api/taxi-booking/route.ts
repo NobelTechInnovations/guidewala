@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import { TaxiBookingDetails } from "@/models";
 import { formatBookingId, generateTrackingId } from "@/lib/bookingId";
-import { sendMailSafe } from "@/lib/mailer";
+import { sendTemplateMail } from "@/lib/emailTemplates";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -48,23 +48,21 @@ export async function POST(req: NextRequest) {
   });
 
   const notifyTo = process.env.SEND_PKG_BOOKING_TO || "booking@guidewala.co.in";
-  await sendMailSafe({
-    to: notifyTo,
-    subject: `New Taxi Booking Enquiry — ${taxiBookingId}`,
-    html: `
-      <h3>New Taxi Booking Enquiry</h3>
-      <p><strong>Booking ID:</strong> ${taxiBookingId}</p>
-      <p><strong>Name:</strong> ${custName}</p>
-      <p><strong>Phone:</strong> ${phoneNo} ${whatsAppNo ? `(alt: ${whatsAppNo})` : ""}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>City:</strong> ${city}</p>
-      <p><strong>Address:</strong> ${address}</p>
-      <p><strong>Date of Travel:</strong> ${dateOfTravel}</p>
-      <p><strong>Vehicle:</strong> ${vehicleType}</p>
-      <p><strong>Passengers:</strong> ${numberOfPersons}</p>
-      <p><strong>Tour Plan:</strong> ${tourPlan || "—"}</p>
-    `,
+
+  await sendTemplateMail("TAXI_BOOKING_ADMIN", notifyTo, {
+    bookingId: taxiBookingId,
+    name: custName,
+    phone: whatsAppNo ? `${phoneNo} (alt: ${whatsAppNo})` : phoneNo,
+    email,
+    city,
+    address,
+    dateOfTravel,
+    vehicleType,
+    numberOfPersons,
+    tourPlan,
   });
+
+  await sendTemplateMail("TAXI_BOOKING_CUSTOMER", email, { name: custName, email, bookingId: taxiBookingId });
 
   return NextResponse.json({ ok: true, bookingId: taxiBookingId });
 }

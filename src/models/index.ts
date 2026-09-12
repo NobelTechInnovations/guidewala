@@ -17,3 +17,5 @@ export { default as VendorDetails } from "./VendorDetails";
 export { default as VendorLogin } from "./VendorLogin";
 export { default as VendorCustDetails } from "./VendorCustDetails";
 export { default as BlogPost } from "./BlogPost";
+export { default as ContactInquiry } from "./ContactInquiry";
+export { default as EmailTemplate } from "./EmailTemplate";

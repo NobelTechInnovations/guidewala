@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import { GuideDetails } from "@/models";
-import { sendMailSafe } from "@/lib/mailer";
+import { sendTemplateMail } from "@/lib/emailTemplates";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -66,31 +66,19 @@ export async function POST(req: NextRequest) {
   });
 
   const notifyTo = process.env.SEND_PKG_BOOKING_TO || "booking@guidewala.co.in";
-  await sendMailSafe({
-    to: notifyTo,
-    subject: `New Guide Registration — ${firstName} ${lastName || ""}`,
-    html: `
-      <h3>New Guide Registration</h3>
-      <p><strong>Name:</strong> ${firstName} ${lastName || ""}</p>
-      <p><strong>Phone:</strong> ${phoneNo}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Address:</strong> ${address1 || ""} ${address2 || ""}, ${city}, ${state}, ${country} - ${pinCode}</p>
-      <p><strong>Languages:</strong> ${languages.join(", ")}</p>
-      <p><strong>Experience Cities:</strong> ${expCities.join(", ")}</p>
-      <p>Next step: reach out to collect license &amp; ID proof for verification.</p>
-    `,
+  const name = `${firstName} ${lastName || ""}`.trim();
+  const address = `${address1 || ""} ${address2 || ""}, ${city}, ${state}, ${country} - ${pinCode}`;
+
+  await sendTemplateMail("GUIDE_REGISTRATION_ADMIN", notifyTo, {
+    name,
+    phone: phoneNo,
+    email,
+    address,
+    languages: languages.join(", "),
+    expCities: expCities.join(", "),
   });
 
-  await sendMailSafe({
-    to: email,
-    subject: "Guidewala — Registration received",
-    html: `
-      <p>Hi ${firstName},</p>
-      <p>Thanks for registering as a guide with Guidewala! Our team will review your details and
-      reach out shortly to collect your license and ID proof for verification.</p>
-      <p>— Team Guidewala</p>
-    `,
-  });
+  await sendTemplateMail("GUIDE_REGISTRATION_CUSTOMER", email, { name, email });
 
   return NextResponse.json({ ok: true });
 }
