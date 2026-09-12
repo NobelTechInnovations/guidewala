@@ -1,10 +1,9 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   // Pin the workspace root — a stray package-lock.json two levels up
   // (an unrelated sibling client project) otherwise confuses detection.
   turbopack: {
-    root: __dirname,
+    root: import.meta.dirname,
   },
 
   // Next's dev server silently drops requests whose Host header isn't
