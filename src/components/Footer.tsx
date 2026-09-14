@@ -41,7 +41,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           <div className="space-y-6">
             <Image
-              src="/assets/img/logo1.jpeg"
+              src="/assets/img/logo11.png"
               alt="Guidewala"
               width={140}
               height={40}

@@ -200,7 +200,7 @@ export default function AboutUsPage() {
             </div>
 
             <div className="mt-10">
-              <Image src="/assets/img/logo1.jpeg" alt="Guidewala" width={140} height={40} className="h-12 w-auto opacity-80" />
+              <Image src="/assets/img/logo11.png" alt="Guidewala" width={140} height={40} className="h-12 w-auto opacity-80" />
             </div>
           </div>
         </div>

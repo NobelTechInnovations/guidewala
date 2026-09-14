@@ -37,7 +37,7 @@ function LoginForm() {
     <div className="min-h-[70vh] flex items-center justify-center px-6 py-16">
       <form onSubmit={submit} className="w-full max-w-sm bg-white border border-slate-200 rounded-2xl shadow-sm p-8">
         <div className="flex flex-col items-center mb-6">
-          <Image src="/assets/img/logo1.jpeg" alt="Guidewala" width={140} height={40} className="h-9 w-auto mb-4" />
+          <Image src="/assets/img/logo11.png" alt="Guidewala" width={140} height={40} className="h-9 w-auto mb-4" />
           <div className="w-12 h-12 rounded-full bg-green-50 text-gw-brand flex items-center justify-center mb-2">
             <FaLock />
           </div>
