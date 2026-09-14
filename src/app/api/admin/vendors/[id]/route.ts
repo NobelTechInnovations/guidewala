@@ -75,7 +75,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       PINCODE: pinCode || "",
       IS_ACTIVE: isActive,
     },
-    { new: true }
+    { returnDocument: "after" }
   ).lean();
   if (!vendor) return NextResponse.json({ error: "Vendor not found." }, { status: 404 });
 

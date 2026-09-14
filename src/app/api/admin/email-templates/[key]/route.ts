@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ key:
   const template = await EmailTemplate.findOneAndUpdate(
     { KEY: key },
     { SUBJECT: subject, BODY_HTML: bodyHtml, UPDATED_ON: new Date() },
-    { new: true }
+    { returnDocument: "after" }
   ).lean();
   if (!template) return NextResponse.json({ error: "Template not found." }, { status: 404 });
   return NextResponse.json({ template });

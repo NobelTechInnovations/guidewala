@@ -17,7 +17,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const hotel = await HotelMaster.findOneAndUpdate(
     { HOTEL_ID: Number(id) },
     { HOTEL_NAME: hotelName, CITY_ID: cityId, IS_ACTIVE: isActive },
-    { new: true }
+    { returnDocument: "after" }
   ).lean();
   if (!hotel) return NextResponse.json({ error: "Hotel not found." }, { status: 404 });
   return NextResponse.json({ hotel });

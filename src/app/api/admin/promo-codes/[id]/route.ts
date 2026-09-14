@@ -37,7 +37,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     update.PROMO_CODE_IMG = await saveAdminUpload(image, "PromoCode");
   }
 
-  const promo = await PromoCodeMaster.findOneAndUpdate({ PROMO_ID: id }, update, { new: true }).lean();
+  const promo = await PromoCodeMaster.findOneAndUpdate({ PROMO_ID: id }, update, { returnDocument: "after" }).lean();
   if (!promo) return NextResponse.json({ error: "Promo code not found." }, { status: 404 });
   return NextResponse.json({ promo });
 }

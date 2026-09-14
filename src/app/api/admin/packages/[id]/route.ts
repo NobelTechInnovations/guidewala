@@ -33,7 +33,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     update.PKG_IMAGE = await saveAdminUpload(image, "pkgTitleImg");
   }
 
-  const pkg = await PackageTitleMaster.findOneAndUpdate({ PKG_ID: Number(id) }, update, { new: true }).lean();
+  const pkg = await PackageTitleMaster.findOneAndUpdate({ PKG_ID: Number(id) }, update, { returnDocument: "after" }).lean();
   if (!pkg) return NextResponse.json({ error: "Package not found." }, { status: 404 });
   return NextResponse.json({ pkg });
 }

@@ -47,7 +47,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const promo = await PromoCodeMaster.findOneAndUpdate(
     { PROMO_ID: id, VENDER_ID: session.vendorId },
     update,
-    { new: true }
+    { returnDocument: "after" }
   ).lean();
   if (!promo) return NextResponse.json({ error: "Promo code not found." }, { status: 404 });
   return NextResponse.json({ promo });

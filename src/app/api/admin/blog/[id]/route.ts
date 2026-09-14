@@ -39,7 +39,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       TAGS: tags ? tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
       IS_PUBLISHED: isPublished ?? true,
     },
-    { new: true }
+    { returnDocument: "after" }
   );
 
   if (!post) return NextResponse.json({ error: "Not found." }, { status: 404 });

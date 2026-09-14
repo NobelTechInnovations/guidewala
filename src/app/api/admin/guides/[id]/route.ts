@@ -24,7 +24,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const guide = await GuideDetails.findOneAndUpdate(
     { GUIDE_ID: Number(id) },
     { STATUS: status, ACTION_ON: new Date() },
-    { new: true }
+    { returnDocument: "after" }
   ).lean();
 
   // Only notify the guide when the status actually changes into Accepted/Rejected —

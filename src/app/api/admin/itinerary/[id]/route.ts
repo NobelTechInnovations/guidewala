@@ -15,7 +15,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (image && image.size > 0) {
     update.PKG_IMAGE = await saveAdminUpload(image, "pkgItinImg");
   }
-  const item = await PackageDescDetails.findOneAndUpdate({ ID: Number(id) }, update, { new: true }).lean();
+  const item = await PackageDescDetails.findOneAndUpdate({ ID: Number(id) }, update, { returnDocument: "after" }).lean();
   if (!item) return NextResponse.json({ error: "Itinerary item not found." }, { status: 404 });
   return NextResponse.json({ item });
 }
