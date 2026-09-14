@@ -58,7 +58,7 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           <Link href="/" className="flex-shrink-0">
             <Image
-              src="/assets/img/logo1.png"
+              src="/assets/img/logo1.jpeg"
               alt="Guidewala"
               width={160}
               height={48}
@@ -131,7 +131,7 @@ export default function Header() {
           />
           <div className="absolute right-0 top-0 h-full w-80 max-w-[85%] bg-white p-6 shadow-2xl overflow-y-auto">
             <div className="flex justify-between items-center mb-8">
-              <Image src="/assets/img/logo1.png" alt="Guidewala" width={110} height={32} className="h-8 w-auto" />
+              <Image src="/assets/img/logo1.jpeg" alt="Guidewala" width={110} height={32} className="h-8 w-auto" />
               <button
                 type="button"
                 aria-label="Close menu"
