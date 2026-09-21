@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Browse all Guidewala partner coupons and exclusive deals.",
 };
 
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "https://admin.guidewala.co.in/";
+const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "";
 
 type PromoLean = {
   PROMO_ID: string;

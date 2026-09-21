@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "Select a city and choose from government-approved local guide packages across India.",
 };
 
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "https://admin.guidewala.co.in/";
+const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "";
 
 type CityLean = { CITY_ID: string; CITY_NAME: string };
 type PackageLean = {

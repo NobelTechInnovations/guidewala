@@ -15,7 +15,7 @@ import GuideBookingForm from "@/components/booking/GuideBookingForm";
 import { dbConnect } from "@/lib/mongodb";
 import { PackageTitleMaster, PackageDescDetails, CityMaster, HotelMaster } from "@/models";
 
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "https://admin.guidewala.co.in/";
+const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "";
 
 const UNIVERSAL_INCLUSIONS = [
   "Government-approved, verified guide",

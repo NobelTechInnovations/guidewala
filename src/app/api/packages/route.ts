@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import { PackageTitleMaster, CityMaster } from "@/models";
 
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "https://admin.guidewala.co.in/";
+const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || `${process.env.NEXT_PUBLIC_SITE_URL || ""}/`;
 
 // Public read-only endpoint — list active guide packages, optionally
 // filtered by city. Used by the mobile app's Book Guide / Featured Tours

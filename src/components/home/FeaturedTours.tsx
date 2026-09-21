@@ -2,7 +2,7 @@ import { dbConnect } from "@/lib/mongodb";
 import { PackageTitleMaster, CityMaster } from "@/models";
 import ToursCarousel, { TourSlide } from "./ToursCarousel";
 
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "https://admin.guidewala.co.in/";
+const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "";
 
 type PackageLean = {
   PKG_ID: number;

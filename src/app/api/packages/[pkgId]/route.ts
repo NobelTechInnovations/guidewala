@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import { PackageTitleMaster, PackageDescDetails, CityMaster, HotelMaster } from "@/models";
 
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "https://admin.guidewala.co.in/";
+const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || `${process.env.NEXT_PUBLIC_SITE_URL || ""}/`;
 
 // Public read-only endpoint — single package with itinerary + nearby
 // hotels, matching what the web app's /packages/[pkgId] page shows.

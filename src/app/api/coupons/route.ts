@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import { PromoCodeMaster, VendorDetails, CityMaster } from "@/models";
 
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "https://admin.guidewala.co.in/";
+const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || `${process.env.NEXT_PUBLIC_SITE_URL || ""}/`;
 
 // Public read-only endpoint — all coupons with vendor/city info attached,
 // matching the web app's /coupons page.
