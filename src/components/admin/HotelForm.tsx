@@ -10,12 +10,14 @@ export default function HotelForm({
   initial,
 }: {
   hotelId?: string;
-  initial?: { hotelName: string; cityId: string; isActive: string };
+  initial?: { hotelName: string; cityId: string; isActive: string; address?: string; contactNo?: string };
 }) {
   const router = useRouter();
   const [hotelName, setHotelName] = useState(initial?.hotelName || "");
   const [cityId, setCityId] = useState(initial?.cityId || "");
   const [isActive, setIsActive] = useState(initial?.isActive || "Y");
+  const [address, setAddress] = useState(initial?.address || "");
+  const [contactNo, setContactNo] = useState(initial?.contactNo || "");
   const [cities, setCities] = useState<{ CITY_ID: string; CITY_NAME: string }[]>([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -38,7 +40,7 @@ export default function HotelForm({
       const res = await fetch(hotelId ? `/api/admin/hotels/${hotelId}` : "/api/admin/hotels", {
         method: hotelId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hotelName, cityId, isActive }),
+        body: JSON.stringify({ hotelName, cityId, isActive, address, contactNo }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Save failed.");
       router.push("/admin/hotels");
@@ -73,6 +75,14 @@ export default function HotelForm({
               <option value="Y">Yes</option>
               <option value="N">No</option>
             </select>
+          </Field>
+          <div className="sm:col-span-2">
+            <Field label="Address">
+              <textarea rows={3} className={inputCls} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Hotel address" />
+            </Field>
+          </div>
+          <Field label="Contact No.">
+            <input className={inputCls} value={contactNo} onChange={(e) => setContactNo(e.target.value)} placeholder="+91 …" />
           </Field>
         </div>
       </Card>

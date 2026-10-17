@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LegalPage from "@/components/LegalPage";
+import { DEFAULT_CANCELLATION_POLICY } from "@/lib/policies";
 
 export const metadata: Metadata = { title: "Terms and Conditions | Guidewala" };
 
@@ -10,17 +11,8 @@ export default function TermsAndConditionsPage() {
         Please read these Terms and Conditions of Use (&ldquo;User Agreement&rdquo;) very carefully.
       </p>
 
-      <h3>Payment Policy</h3>
-      <p>
-        All payments to Guidewala are non-refundable. Guide payment is totally not refundable,
-        however we may review it according to situation.
-      </p>
-
       <h3>Cancellation &amp; Refunds</h3>
-      <p>
-        Customer can cancel the order within 24 hrs from the date of confirmation of the order. We
-        may make a refund according to situation.
-      </p>
+      <p>{DEFAULT_CANCELLATION_POLICY}</p>
       <p>
         If the guide doesn&apos;t contact you as per the booking, please contact us immediately — we
         will pursue the case with the necessary actions.

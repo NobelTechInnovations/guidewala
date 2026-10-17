@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { mediaPath, type UploadDir } from "./media";
 
 /**
  * Resolves a possibly-relative path (e.g. "/assets/img/foo.jpg") to an
@@ -17,4 +18,15 @@ export function toAbsoluteUrl(path: string | undefined | null, req: NextRequest)
   if (/^https?:\/\//i.test(path)) return path;
   const origin = process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin;
   return new URL(path, origin).toString();
+}
+
+/**
+ * Absolute URL for an uploaded file (for the mobile JSON API); null when there's
+ * no filename. Resolved per request (NEXT_PUBLIC_SITE_URL, else the request
+ * origin) rather than from a build-time constant, so the mobile app never
+ * receives a relative path.
+ */
+export function mediaAbsoluteUrl(dir: UploadDir, file: string | null | undefined, req: NextRequest): string | null {
+  const p = mediaPath(dir, file);
+  return p ? toAbsoluteUrl(p, req) : null;
 }

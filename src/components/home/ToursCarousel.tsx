@@ -5,14 +5,14 @@ import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { FaShieldAlt, FaArrowRight } from "react-icons/fa";
+import UploadedImage from "@/components/UploadedImage";
 
 export type TourSlide = {
   key: string;
   href: string;
-  img: string;
+  img: string | null; // null → placeholder (uploaded file missing on disk)
   title: string;
   tag: string; // e.g. duration, or city name
   price?: number;
@@ -38,12 +38,12 @@ export default function ToursCarousel({ slides }: { slides: TourSlide[] }) {
         const Card = (
           <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
             <div className="relative aspect-[4/3] bg-slate-100">
-              <Image
+              <UploadedImage
                 src={s.img}
                 alt={s.title}
-                fill
                 sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 90vw"
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
+                placeholderLabel={s.title}
               />
               <span className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/95 backdrop-blur text-gw-brand text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
                 <FaShieldAlt /> {s.tag}

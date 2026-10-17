@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import { PromoCodeMaster, VendorDetails } from "@/models";
 import { newStringId } from "@/lib/ids";
-import { saveAdminUpload } from "@/lib/upload";
+import { isImageFile, saveAdminUpload } from "@/lib/upload";
 
 export async function GET() {
   await dbConnect();
@@ -33,6 +33,9 @@ export async function POST(req: NextRequest) {
   }
   if (!image || image.size === 0) {
     return NextResponse.json({ error: "Promo Code image is required." }, { status: 400 });
+  }
+  if (!isImageFile(image)) {
+    return NextResponse.json({ error: "Promo Code image must be a JPG, PNG, WebP, GIF or AVIF file." }, { status: 400 });
   }
 
   await dbConnect();

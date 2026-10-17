@@ -11,6 +11,12 @@ const nextConfig = {
   // device reaches this server via the Mac's LAN IP, not localhost, so that
   // origin needs to be allow-listed explicitly for the mobile app to work.
   allowedDevOrigins: ["192.168.1.3", "10.0.2.2"],
+
+  // Admin package saves post cover + gallery + brochure in one request, which
+  // exceeds the 10MB default middleware body buffer (the body would be truncated).
+  experimental: {
+    proxyClientMaxBodySize: "40mb",
+  },
   images: {
     remotePatterns: [
       // Guide photos / license scans are served from the admin panel domain —

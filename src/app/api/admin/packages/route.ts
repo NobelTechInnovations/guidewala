@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import { PackageTitleMaster, CityMaster } from "@/models";
 import { nextNumericId } from "@/lib/ids";
-import { saveAdminUpload } from "@/lib/upload";
+import { mediaExists } from "@/lib/media.server";
+import { parsePackageForm, readForm, formErrorResponse } from "./fields";
 
 export async function GET() {
   await dbConnect();
@@ -12,40 +13,27 @@ export async function GET() {
   ]);
   const cityMap = new Map(cities.map((c) => [c.CITY_ID, c.CITY_NAME]));
   return NextResponse.json({
-    packages: packages.map((p) => ({ ...p, CITY_NAME: cityMap.get(p.CITY_ID) || "" })),
+    packages: packages.map((p) => ({
+      ...p,
+      CITY_NAME: cityMap.get(p.CITY_ID) || "",
+      // Cover missing from disk (legacy rows whose file never made it over)
+      // — lets the list tag packages that need a re-upload.
+      imageMissing: !mediaExists("pkgTitleImg", p.PKG_IMAGE),
+    })),
   });
 }
 
 export async function POST(req: NextRequest) {
-  const form = await req.formData();
-  const title = form.get("title") as string;
-  const cityId = form.get("cityId") as string;
-  const amount = form.get("amount") as string;
-  const desc = form.get("desc") as string;
-  const isActive = (form.get("isActive") as string) || "Y";
-  const image = form.get("image") as File | null;
-
-  if (!title || !cityId || !amount) {
-    return NextResponse.json({ error: "Title, City and Amount are required." }, { status: 400 });
-  }
-  if (!image || image.size === 0) {
-    return NextResponse.json({ error: "Package image is required." }, { status: 400 });
+  let changes;
+  try {
+    changes = await parsePackageForm(await readForm(req), { mode: "create" });
+  } catch (e) {
+    return formErrorResponse(e);
   }
 
   await dbConnect();
   const pkgId = await nextNumericId(PackageTitleMaster, "PKG_ID");
-  const filename = await saveAdminUpload(image, "pkgTitleImg");
-
-  await PackageTitleMaster.create({
-    PKG_ID: pkgId,
-    TITLE_NAME: title,
-    CITY_ID: cityId,
-    PKG_AMOUNT: Number(amount),
-    PKG_IMAGE: filename,
-    PKG_DESC: desc || "",
-    IS_ACTIVE: isActive,
-    CREATED_ON: new Date(),
-  });
+  await PackageTitleMaster.create({ ...changes.set, PKG_ID: pkgId, CREATED_ON: new Date() });
 
   return NextResponse.json({ pkgId }, { status: 201 });
 }

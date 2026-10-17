@@ -62,6 +62,10 @@ const DIFFERENTIATORS = [
   },
 ];
 
+// Featured tours / coupons depend on uploaded files and admin toggles that
+// change at runtime, so render per request instead of baking them in at build.
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <main className="text-slate-800">

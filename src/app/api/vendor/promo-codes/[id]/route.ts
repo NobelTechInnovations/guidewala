@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import { PromoCodeMaster } from "@/models";
-import { saveAdminUpload } from "@/lib/upload";
+import { isImageFile, saveAdminUpload } from "@/lib/upload";
 import { getVendorSession } from "@/lib/vendorAuth";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -28,6 +28,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const desc = form.get("desc") as string;
   const isActive = form.get("isActive") as string;
   const image = form.get("image") as File | null;
+
+  // Same type check as create: the file is served back from the site's own origin.
+  if (image && image.size > 0 && !isImageFile(image)) {
+    return NextResponse.json({ error: "Promo Code image must be a JPG, PNG, WebP, GIF or AVIF file." }, { status: 400 });
+  }
 
   await dbConnect();
   const update: Record<string, unknown> = {

@@ -1,22 +1,36 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  FaShieldAlt,
-  FaMapMarkerAlt,
-  FaCheckCircle,
-  FaStar,
-  FaUserTie,
-  FaWallet,
-  FaClock,
-} from "react-icons/fa";
+import { cache } from "react";
+import { FaShieldAlt, FaWallet } from "react-icons/fa";
 import GuideBookingForm from "@/components/booking/GuideBookingForm";
+import Gallery from "@/components/package/Gallery";
+import InfoTabs, { type InfoTab } from "@/components/package/InfoTabs";
+import ItineraryDays, { type DayView } from "@/components/package/ItineraryDays";
+import NeedToKnow from "@/components/package/NeedToKnow";
+import PlacesGrid, { type PlaceView } from "@/components/package/PlacesGrid";
+import PriceCard, { MobileBookBar } from "@/components/package/PriceCard";
+import RelatedPackages from "@/components/package/RelatedPackages";
+import RichText from "@/components/package/RichText";
+import SectionNav, { type NavSection } from "@/components/package/SectionNav";
+import TourHeader from "@/components/package/TourHeader";
+import TourIncludes from "@/components/package/TourIncludes";
 import { dbConnect } from "@/lib/mongodb";
+import { existingMediaPath } from "@/lib/media.server";
+import {
+  SHOWN,
+  durationLabel,
+  hasDayNo,
+  htmlToText,
+  isDayWise,
+  sortItinerary,
+  type ItineraryDoc,
+  type PackageDoc,
+} from "@/lib/packages";
+import { cancellationPolicyFor, policySummary } from "@/lib/policies";
 import { PackageTitleMaster, PackageDescDetails, CityMaster, HotelMaster } from "@/models";
 
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "";
-
+/** Tour Information fallback for packages with no inclusions/exclusions of their own (all legacy ones). */
 const UNIVERSAL_INCLUSIONS = [
   "Government-approved, verified guide",
   "Monument entry fee assistance",
@@ -24,38 +38,36 @@ const UNIVERSAL_INCLUSIONS = [
   "Transparent, upfront pricing",
 ];
 
-type PackageLean = {
-  PKG_ID: number;
-  TITLE_NAME: string;
-  CITY_ID: string;
-  PKG_AMOUNT: number;
-  PKG_IMAGE: string;
-  PKG_DESC: string;
-};
-type ItineraryLean = { ID: number; ITINERARY: string; PACKAGE_DESC: string; PKG_IMAGE: string };
+function whatsappHref(title: string, pkgId: number): string {
+  const text = `Hi, I'd like to enquire about ${title} (Package #${pkgId}).`;
+  return `https://api.whatsapp.com/send/?phone=919829185267&text=${encodeURIComponent(text)}`;
+}
 
-async function getPackage(pkgId: number) {
+/** Everything the page shows. `cache` lets generateMetadata and the page share one lookup per request. */
+const getPackage = cache(async (pkgId: number) => {
+  if (!Number.isSafeInteger(pkgId)) return null; // "/packages/abc" -> 404, not a cast error
   await dbConnect();
-  const pkg = (await PackageTitleMaster.findOne({ PKG_ID: pkgId, IS_ACTIVE: "Y" }).lean()) as unknown as PackageLean | null;
+  const pkg = (await PackageTitleMaster.findOne({ PKG_ID: pkgId, IS_ACTIVE: "Y" }).lean()) as unknown as PackageDoc | null;
   if (!pkg) return null;
 
   const [city, itinerary, hotels, related] = await Promise.all([
     CityMaster.findOne({ CITY_ID: pkg.CITY_ID }).lean() as unknown as { CITY_NAME: string } | null,
-    PackageDescDetails.find({ PKG_ID: pkgId }).lean() as unknown as ItineraryLean[],
+    // Hidden itinerary items (IS_ACTIVE "N") never reach the page.
+    PackageDescDetails.find({ PKG_ID: pkgId, IS_ACTIVE: SHOWN }).lean() as unknown as ItineraryDoc[],
     HotelMaster.find({ CITY_ID: pkg.CITY_ID, IS_ACTIVE: "Y" }).lean() as unknown as { HOTEL_NAME: string }[],
     PackageTitleMaster.find({ CITY_ID: pkg.CITY_ID, IS_ACTIVE: "Y", PKG_ID: { $ne: pkgId } })
       .limit(3)
-      .lean() as unknown as PackageLean[],
+      .lean() as unknown as PackageDoc[],
   ]);
 
   return {
     pkg,
     cityName: city?.CITY_NAME || "",
-    itinerary,
+    itinerary: sortItinerary(itinerary),
     hotels: hotels.map((h) => h.HOTEL_NAME),
     related,
   };
-}
+});
 
 export async function generateMetadata({
   params,
@@ -65,10 +77,26 @@ export async function generateMetadata({
   const { pkgId } = await params;
   const data = await getPackage(Number(pkgId));
   if (!data) return { title: "Package not found | Guidewala" };
+  const { pkg, cityName } = data;
+  const duration = durationLabel(pkg.DURATION_DAYS, pkg.DURATION_NIGHTS);
   return {
-    title: `${data.pkg.TITLE_NAME} | Guidewala`,
-    description: `Book a government-approved guide for ${data.pkg.TITLE_NAME} in ${data.cityName}.`,
+    title: `${pkg.TITLE_NAME} | Guidewala`,
+    description: `${duration ? `${duration} · ` : ""}Book a government-approved guide for ${pkg.TITLE_NAME}${
+      cityName ? ` in ${cityName}` : ""
+    }.`,
   };
+}
+
+/** A page section that the sticky nav can jump to (scroll margin clears header + nav). */
+function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
+  return (
+    <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-40">
+      <h2 id={`${id}-title`} className="mb-5 font-display text-2xl font-semibold text-slate-900">
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
 }
 
 export default async function PackageDetailsPage({
@@ -81,208 +109,206 @@ export default async function PackageDetailsPage({
   if (!data) notFound();
 
   const { pkg, cityName, itinerary, hotels, related } = data;
+  const title = pkg.TITLE_NAME ?? "";
+  const amount = pkg.PKG_AMOUNT ?? 0;
+  const priceNote = pkg.PRICE_NOTE?.trim() || "per person";
+  const policy = cancellationPolicyFor(pkg);
+
+  // Only files that exist on disk, cover first — a missing file never becomes a broken <img>.
+  const gallery = [
+    existingMediaPath("pkgTitleImg", pkg.PKG_IMAGE),
+    ...(pkg.GALLERY ?? []).map((file) => existingMediaPath("pkgGallery", file)),
+  ].filter((src): src is string => src !== null);
+
+  // Day-wise as soon as any shown item has a day; undayed items then follow as "Also included".
+  const dayWise = isDayWise(itinerary);
+  const days: DayView[] = itinerary
+    .filter((item) => dayWise && hasDayNo(item.DAY_NO))
+    .map((item) => ({
+      id: item.ID,
+      dayNo: item.DAY_NO as number,
+      title: item.ITINERARY ?? "",
+      desc: item.PACKAGE_DESC,
+      meals: item.MEALS ?? [],
+      stay: item.STAY?.trim() || undefined,
+      image: existingMediaPath("pkgItinImg", item.PKG_IMAGE),
+    }));
+  const places: PlaceView[] = itinerary
+    .filter((item) => !dayWise || !hasDayNo(item.DAY_NO))
+    .map((item) => ({
+      id: item.ID,
+      title: item.ITINERARY ?? "",
+      desc: item.PACKAGE_DESC,
+      image: existingMediaPath("pkgItinImg", item.PKG_IMAGE),
+    }));
+
+  const includes = pkg.INCLUDES ?? [];
+  const highlights = pkg.HIGHLIGHTS ?? [];
+  const inclusions = pkg.INCLUSIONS ?? [];
+  const exclusions = pkg.EXCLUSIONS ?? [];
+  const infoTabs: InfoTab[] =
+    inclusions.length > 0 || exclusions.length > 0
+      ? [
+          ...(inclusions.length > 0 ? [{ id: "inclusions", label: "Inclusions", items: inclusions, kind: "include" as const }] : []),
+          ...(exclusions.length > 0 ? [{ id: "exclusions", label: "Exclusions", items: exclusions, kind: "exclude" as const }] : []),
+        ]
+      : [{ id: "included", label: "What's included", items: UNIVERSAL_INCLUSIONS, kind: "include" }];
+
+  const documents = pkg.DOCUMENTS ?? [];
+  const thingsToCarry = pkg.THINGS_TO_CARRY ?? [];
+  const notes = pkg.NOTES ?? [];
+  const hasNeedToKnow = documents.length + thingsToCarry.length + notes.length > 0;
+  const hasOverview = htmlToText(pkg.PKG_DESC) !== "";
+
+  // Nav lists only sections that render (Tour Information and Cancellation always do).
+  const sections: NavSection[] = [
+    ...(itinerary.length > 0 ? [{ id: "itinerary", label: "Itinerary" }] : []),
+    { id: "tour-information", label: "Tour Information" },
+    ...(hasNeedToKnow ? [{ id: "need-to-know", label: "Need to Know" }] : []),
+    { id: "cancellation", label: "Cancellation Policy" },
+  ];
 
   return (
     <main>
-      {/* Hero */}
-      <div className="relative h-[46vh] min-h-[360px] bg-slate-900">
-        <Image
-          src={`${IMG_BASE}img/pkgTitleImg/${pkg.PKG_IMAGE}`}
-          alt={pkg.TITLE_NAME}
-          fill
-          sizes="100vw"
-          priority
-          className="object-cover opacity-70"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
-        <div className="absolute inset-0 flex flex-col justify-end">
-          <div className="max-w-7xl mx-auto px-6 pb-8 w-full">
-            <nav className="text-sm text-white/70 mb-3 flex items-center gap-2">
-              <Link href="/" className="hover:text-white transition">
+      <div className="mx-auto max-w-7xl px-6 pt-6 pb-16">
+        <nav aria-label="Breadcrumb" className="mb-4 text-sm text-slate-500">
+          <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <li>
+              <Link href="/" className="transition hover:text-gw-brand">
                 Home
               </Link>
-              <span>/</span>
-              <Link href="/book-guide" className="hover:text-white transition">
+            </li>
+            <li aria-hidden>/</li>
+            <li>
+              <Link href="/book-guide" className="transition hover:text-gw-brand">
                 Book Guide
               </Link>
-              <span>/</span>
-              <span className="text-white">{pkg.TITLE_NAME}</span>
-            </nav>
-            <div className="flex items-center gap-3 mb-3">
-              <span className="flex items-center gap-1.5 bg-gw-brand text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide">
-                <FaShieldAlt /> Verified Guide
-              </span>
-              <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                <FaMapMarkerAlt /> {cityName}
-              </span>
-            </div>
-            <h1 className="font-display text-3xl md:text-5xl font-semibold text-white text-balance max-w-3xl">
-              {pkg.TITLE_NAME}
-            </h1>
-            <div className="flex items-center gap-1.5 mt-3 text-white/90 text-sm font-semibold">
-              <span className="flex text-gw-yellow text-xs gap-0.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <FaStar key={i} />
-                ))}
-              </span>
-              4.8 Rated Experience
-            </div>
-          </div>
-        </div>
-      </div>
+            </li>
+            <li aria-hidden>/</li>
+            <li aria-current="page" className="min-w-0 font-medium text-slate-800">
+              {title}
+            </li>
+          </ol>
+        </nav>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-2 space-y-12">
-            {/* Overview */}
-            {pkg.PKG_DESC && (
+        <Gallery images={gallery} title={title} />
+
+        <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-8 lg:grid-cols-3">
+          {/* Title, overview, includes/highlights */}
+          <div className="min-w-0 space-y-8 lg:col-span-2">
+            <TourHeader
+              title={title}
+              cityName={cityName}
+              tourType={pkg.TOUR_TYPE}
+              duration={durationLabel(pkg.DURATION_DAYS, pkg.DURATION_NIGHTS)}
+              route={pkg.ROUTE ?? []}
+              itineraryLink={
+                dayWise ? "View day-wise itinerary" : itinerary.length > 0 ? "See places you'll visit" : undefined
+              }
+            />
+
+            {hasOverview && (
               <div>
-                <h2 className="font-display text-2xl font-semibold text-slate-900 mb-4">Overview</h2>
-                <div
-                  className="prose prose-slate max-w-none text-slate-600"
-                  dangerouslySetInnerHTML={{ __html: pkg.PKG_DESC }}
-                />
+                <h2 className="mb-3 font-display text-2xl font-semibold text-slate-900">Overview</h2>
+                <RichText text={pkg.PKG_DESC} className="leading-relaxed text-slate-600" />
               </div>
             )}
 
-            {/* What's included */}
-            <div>
-              <h2 className="font-display text-2xl font-semibold text-slate-900 mb-5">What&apos;s Included</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {UNIVERSAL_INCLUSIONS.map((item) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-3 bg-green-50 border border-green-100 rounded-xl px-4 py-3.5 text-sm font-medium text-slate-700"
-                  >
-                    <FaCheckCircle className="text-gw-brand shrink-0" /> {item}
-                  </div>
-                ))}
-              </div>
-            </div>
+            {(includes.length > 0 || highlights.length > 0) && (
+              <TourIncludes includes={includes} highlights={highlights} />
+            )}
+          </div>
 
-            {/* Highlights / itinerary */}
+          {/* Price card: right column spanning both rows on desktop, under the title block on mobile. */}
+          <aside className="min-w-0 lg:col-start-3 lg:row-span-2 lg:row-start-1">
+            <div className="lg:sticky lg:top-24">
+              <PriceCard
+                amount={amount}
+                priceNote={priceNote}
+                whatsappHref={whatsappHref(title, pkg.PKG_ID)}
+                brochureHref={existingMediaPath("pkgBrochure", pkg.BROCHURE)}
+                policySummary={policySummary(policy)}
+              />
+            </div>
+          </aside>
+
+          {/* Tabbed sections, booking form, related packages */}
+          <div className="min-w-0 space-y-12 lg:col-span-2">
+            <SectionNav sections={sections} />
+
             {itinerary.length > 0 && (
-              <div>
-                <h2 className="font-display text-2xl font-semibold text-slate-900 mb-5">
-                  Places You&apos;ll Visit
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {itinerary.map((item) => (
-                    <div key={item.ID} className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm group">
-                      {item.PKG_IMAGE && (
-                        <div className="relative aspect-[16/10]">
-                          <Image
-                            src={`${IMG_BASE}img/pkgItinImg/${item.PKG_IMAGE}`}
-                            alt={item.ITINERARY}
-                            fill
-                            sizes="(min-width:1024px) 33vw, 50vw"
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        </div>
-                      )}
-                      <div className="p-5">
-                        <h3 className="font-bold text-slate-900 mb-1">{item.ITINERARY}</h3>
-                        {item.PACKAGE_DESC && (
-                          <div
-                            className="text-sm text-slate-500"
-                            dangerouslySetInnerHTML={{ __html: item.PACKAGE_DESC }}
-                          />
-                        )}
+              <Section id="itinerary" title={dayWise ? "Day-wise itinerary" : "Places you'll visit"}>
+                {dayWise ? (
+                  <>
+                    <ItineraryDays days={days} />
+                    {places.length > 0 && (
+                      <div className="mt-10">
+                        <h3 className="mb-4 font-display text-xl font-semibold text-slate-900">Also included</h3>
+                        <PlacesGrid items={places} />
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                    )}
+                  </>
+                ) : (
+                  <PlacesGrid items={places} />
+                )}
+              </Section>
             )}
 
-            {/* Payment note */}
-            <div className="flex items-start gap-4 bg-slate-50 border border-slate-200 rounded-xl p-5">
-              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-gw-brand shrink-0">
-                <FaWallet />
-              </div>
-              <div className="text-sm text-slate-600">
-                <strong className="text-slate-900 block mb-0.5">Simple, direct payment</strong>
-                Payment is collected in advance via Google Pay / UPI — our team shares the details on
-                WhatsApp right after confirming your booking. No hidden charges.
-              </div>
-            </div>
+            <Section id="tour-information" title="Tour information">
+              <InfoTabs tabs={infoTabs} />
+            </Section>
 
-            {/* Related packages */}
+            {hasNeedToKnow && (
+              <Section id="need-to-know" title="Need to know">
+                <NeedToKnow documents={documents} thingsToCarry={thingsToCarry} notes={notes} />
+              </Section>
+            )}
+
+            <Section id="cancellation" title="Cancellation policy & payment terms">
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-slate-200 bg-white p-6">
+                  <h3 className="mb-2 flex items-center gap-2 font-bold text-slate-900">
+                    <FaShieldAlt aria-hidden className="text-gw-brand" /> Cancellation policy
+                  </h3>
+                  <RichText text={policy} small className="text-sm leading-relaxed text-slate-600" />
+                </div>
+                <div className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-gw-brand">
+                    <FaWallet aria-hidden />
+                  </div>
+                  <div className="text-sm text-slate-600">
+                    <strong className="mb-0.5 block text-slate-900">Simple, direct payment</strong>
+                    Payment is collected in advance via Google Pay / UPI — our team shares the details on
+                    WhatsApp right after confirming your booking. No hidden charges.
+                  </div>
+                </div>
+              </div>
+            </Section>
+
+            <section id="book" aria-labelledby="book-title" className="scroll-mt-40">
+              <h2 id="book-title" className="mb-5 font-display text-2xl font-semibold text-slate-900">
+                Book this tour
+              </h2>
+              <GuideBookingForm pkgId={pkg.PKG_ID} pkgAmount={amount} hotels={hotels} cancellationPolicy={policy} />
+            </section>
+
             {related.length > 0 && (
-              <div>
-                <h2 className="font-display text-xl font-semibold text-slate-900 mb-5">
-                  More in {cityName}
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {related.map((r) => (
-                    <Link
-                      key={r.PKG_ID}
-                      href={`/packages/${r.PKG_ID}`}
-                      className="group bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition-all"
-                    >
-                      <div className="relative aspect-[4/3] bg-slate-100">
-                        <Image
-                          src={`${IMG_BASE}img/pkgTitleImg/${r.PKG_IMAGE}`}
-                          alt={r.TITLE_NAME}
-                          fill
-                          sizes="200px"
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="p-3">
-                        <h4 className="text-sm font-bold text-slate-900 truncate">{r.TITLE_NAME}</h4>
-                        <p className="text-gw-brand text-sm font-extrabold">
-                          ₹{r.PKG_AMOUNT.toLocaleString("en-IN")}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+              <Section id="more" title={cityName ? `More in ${cityName}` : "More tours"}>
+                <RelatedPackages
+                  items={related.map((r) => ({
+                    id: r.PKG_ID,
+                    title: r.TITLE_NAME ?? "",
+                    amount: r.PKG_AMOUNT ?? 0,
+                    image: existingMediaPath("pkgTitleImg", r.PKG_IMAGE),
+                  }))}
+                />
+              </Section>
             )}
-          </div>
-
-          {/* Sticky booking sidebar */}
-          <div>
-            <div className="lg:sticky lg:top-24 space-y-6">
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-lg p-6">
-                <span className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
-                  Starting from
-                </span>
-                <div className="flex items-baseline gap-2 mb-5">
-                  <span className="text-3xl font-extrabold text-gw-brand">
-                    ₹{pkg.PKG_AMOUNT.toLocaleString("en-IN")}
-                  </span>
-                  <span className="text-sm text-slate-400">/ person</span>
-                </div>
-
-                <ul className="space-y-3 mb-6 text-sm text-slate-600">
-                  <li className="flex items-center gap-3">
-                    <FaUserTie className="text-gw-brand shrink-0" /> Government-approved guide
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <FaClock className="text-gw-brand shrink-0" /> Flexible scheduling
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <FaMapMarkerAlt className="text-gw-brand shrink-0" /> {cityName}
-                  </li>
-                </ul>
-
-                <a
-                  href="#book"
-                  className="block text-center bg-gw-red hover:bg-red-600 text-white font-bold py-3.5 rounded-xl transition-colors shadow-md"
-                >
-                  Book This Tour
-                </a>
-              </div>
-
-              <div id="book">
-                <GuideBookingForm pkgId={pkg.PKG_ID} pkgAmount={pkg.PKG_AMOUNT} hotels={hotels} />
-              </div>
-            </div>
           </div>
         </div>
       </div>
+
+      <MobileBookBar amount={amount} priceNote={priceNote} />
     </main>
   );
 }

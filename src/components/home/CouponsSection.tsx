@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { dbConnect } from "@/lib/mongodb";
+import { existingMediaPath } from "@/lib/media.server";
 import { PromoCodeMaster } from "@/models";
 import CouponCard, { CouponCardData } from "./CouponCard";
-
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "";
 
 type PromoLean = {
   PROMO_ID: string;
@@ -29,7 +28,7 @@ async function getActiveCoupons(): Promise<CouponCardData[]> {
     promoId: p.PROMO_ID,
     title: p.PROMO_TITLE || "",
     code: p.PROMO_CODE || "",
-    imgUrl: `${IMG_BASE}img/PromoCode/${p.PROMO_CODE_IMG || ""}`,
+    imgUrl: existingMediaPath("PromoCode", p.PROMO_CODE_IMG),
     validTo: p.VALID_TO ? new Date(p.VALID_TO).toLocaleDateString() : "—",
   }));
 }

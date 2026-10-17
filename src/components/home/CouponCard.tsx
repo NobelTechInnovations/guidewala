@@ -1,14 +1,14 @@
 "use client";
 
-import Image from "next/image";
 import { FaRegClock } from "react-icons/fa";
 import { useCouponPopup } from "@/components/CouponPopup";
+import UploadedImage from "@/components/UploadedImage";
 
 export type CouponCardData = {
   promoId: string;
   title: string;
   code: string;
-  imgUrl: string;
+  imgUrl: string | null;
   validTo: string;
 };
 
@@ -18,10 +18,9 @@ export default function CouponCard({ coupon }: { coupon: CouponCardData }) {
   return (
     <div className="min-w-[260px] max-w-[260px] md:min-w-[300px] md:max-w-[300px] bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-xl transition-all overflow-hidden flex flex-col group mb-4">
       <div className="h-32 md:h-36 relative overflow-hidden bg-slate-100">
-        <Image
+        <UploadedImage
           src={coupon.imgUrl}
           alt={coupon.title}
-          fill
           sizes="300px"
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />

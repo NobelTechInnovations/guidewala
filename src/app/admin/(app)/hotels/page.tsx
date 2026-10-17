@@ -5,7 +5,15 @@ import Link from "next/link";
 import { FaEdit, FaPlus } from "react-icons/fa";
 import { PageHeader, Card, Badge, EmptyState, Loading, PrimaryLink } from "@/components/admin/ui";
 
-type Hotel = { HOTEL_ID: number; HOTEL_NAME: string; CITY_NAME: string; IS_ACTIVE: string; CREATED_ON: string };
+type Hotel = {
+  HOTEL_ID: number;
+  HOTEL_NAME: string;
+  CITY_NAME: string;
+  IS_ACTIVE: string;
+  ADDRESS?: string;
+  CONTACT_NO?: string;
+  CREATED_ON: string;
+};
 
 export default function HotelListPage() {
   const [hotels, setHotels] = useState<Hotel[] | null>(null);
@@ -47,7 +55,15 @@ export default function HotelListPage() {
             <tbody>
               {hotels.map((h) => (
                 <tr key={h.HOTEL_ID} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
-                  <td className="px-5 py-3 font-semibold text-slate-800">{h.HOTEL_NAME}</td>
+                  <td className="px-5 py-3">
+                    <div className="font-semibold text-slate-800">{h.HOTEL_NAME}</div>
+                    {h.ADDRESS && (
+                      <div className="text-xs text-slate-500 max-w-xs truncate" title={h.ADDRESS}>
+                        {h.ADDRESS}
+                      </div>
+                    )}
+                    {h.CONTACT_NO && <div className="text-xs text-slate-500">{h.CONTACT_NO}</div>}
+                  </td>
                   <td className="px-5 py-3 text-slate-600">{h.CITY_NAME}</td>
                   <td className="px-5 py-3">
                     <Badge tone={h.IS_ACTIVE === "Y" ? "green" : "slate"}>{h.IS_ACTIVE === "Y" ? "Active" : "Inactive"}</Badge>

@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { FaPlus, FaEdit, FaTrash, FaListUl } from "react-icons/fa";
 import { PageHeader, Badge, EmptyState, Loading, PrimaryLink } from "@/components/admin/ui";
+import HomeToggle from "@/components/admin/HomeToggle";
+import UploadedImage from "@/components/UploadedImage";
+import { mediaPath } from "@/lib/media";
+import { isShown } from "@/lib/packages";
 
 type Pkg = {
   PKG_ID: number;
@@ -13,9 +16,9 @@ type Pkg = {
   PKG_AMOUNT: number;
   PKG_IMAGE: string;
   IS_ACTIVE: string;
+  SHOW_ON_HOME?: string; // "Y" | "N"; missing = shown
+  imageMissing?: boolean; // cover file absent from disk
 };
-
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "";
 
 export default function PackageListPage() {
   const [packages, setPackages] = useState<Pkg[] | null>(null);
@@ -56,23 +59,28 @@ export default function PackageListPage() {
           {packages.map((p) => (
             <div key={p.PKG_ID} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col">
               <div className="relative h-40 bg-slate-100">
-                {p.PKG_IMAGE && (
-                  <Image
-                    src={`${IMG_BASE}/img/pkgTitleImg/${p.PKG_IMAGE}`}
-                    alt={p.TITLE_NAME}
-                    fill
-                    sizes="360px"
-                    className="object-cover"
-                  />
+                <UploadedImage
+                  src={p.imageMissing ? null : mediaPath("pkgTitleImg", p.PKG_IMAGE)}
+                  alt={p.TITLE_NAME}
+                  sizes="360px"
+                  className="object-cover"
+                />
+                {p.imageMissing && (
+                  <div className="absolute top-2 left-2">
+                    <Badge tone="red">Missing image — re-upload</Badge>
+                  </div>
                 )}
                 <div className="absolute top-2 right-2">
-                  <Badge tone={p.IS_ACTIVE === "Y" ? "green" : "slate"}>{p.IS_ACTIVE === "Y" ? "Active" : "Inactive"}</Badge>
+                  <Badge tone={isShown(p.IS_ACTIVE) ? "green" : "slate"}>{isShown(p.IS_ACTIVE) ? "Active" : "Inactive"}</Badge>
                 </div>
               </div>
               <div className="p-4 flex-1 flex flex-col">
                 <h3 className="font-bold text-slate-900 mb-1">{p.TITLE_NAME}</h3>
                 <p className="text-xs text-slate-500 mb-1">{p.CITY_NAME}</p>
-                <p className="text-gw-brand font-extrabold mb-4">₹{p.PKG_AMOUNT?.toLocaleString("en-IN")}/-</p>
+                <p className="text-gw-brand font-extrabold mb-3">₹{p.PKG_AMOUNT?.toLocaleString("en-IN")}/-</p>
+                <div className="mb-4">
+                  <HomeToggle pkgId={p.PKG_ID} initial={p.SHOW_ON_HOME === "N" ? "N" : "Y"} />
+                </div>
                 <div className="mt-auto flex items-center gap-2">
                   <Link
                     href={`/admin/packages/${p.PKG_ID}/itinerary`}
