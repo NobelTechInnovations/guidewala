@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { hotelName, cityId, isActive } = (await req.json()) as Record<string, string>;
+  const { hotelName, cityId, isActive, address, contactNo } = (await req.json()) as Record<string, string>;
   if (!hotelName || !cityId) {
     return NextResponse.json({ error: "Hotel Name and City are required." }, { status: 400 });
   }
@@ -35,6 +35,9 @@ export async function POST(req: NextRequest) {
     HOTEL_NAME: hotelName,
     CITY_ID: cityId,
     IS_ACTIVE: isActive || "Y",
+    // Optional; vouchers autofill these when the hotel is picked. Blank stays "".
+    ADDRESS: typeof address === "string" ? address.trim() : "",
+    CONTACT_NO: typeof contactNo === "string" ? contactNo.trim() : "",
     CREATED_ON: new Date(),
   });
   return NextResponse.json({ hotelId }, { status: 201 });

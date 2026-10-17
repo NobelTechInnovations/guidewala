@@ -6,13 +6,19 @@ import HotelForm from "@/components/admin/HotelForm";
 
 export default function EditHotelPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [initial, setInitial] = useState<{ hotelName: string; cityId: string; isActive: string } | null>(null);
+  const [initial, setInitial] = useState<{ hotelName: string; cityId: string; isActive: string; address: string; contactNo: string } | null>(null);
 
   useEffect(() => {
     fetch(`/api/admin/hotels/${id}`)
       .then((r) => r.json())
       .then((d) =>
-        setInitial({ hotelName: d.hotel.HOTEL_NAME, cityId: d.hotel.CITY_ID, isActive: d.hotel.IS_ACTIVE })
+        setInitial({
+          hotelName: d.hotel.HOTEL_NAME,
+          cityId: d.hotel.CITY_ID,
+          isActive: d.hotel.IS_ACTIVE,
+          address: d.hotel.ADDRESS || "",
+          contactNo: d.hotel.CONTACT_NO || "",
+        })
       );
   }, [id]);
 

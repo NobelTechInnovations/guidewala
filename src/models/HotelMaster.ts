@@ -6,6 +6,8 @@ const HotelMasterSchema = new Schema(
     HOTEL_NAME: String,
     CITY_ID: String,
     IS_ACTIVE: String,
+    ADDRESS: String,
+    CONTACT_NO: String,
     CREATED_ON: Date,
   },
   { collection: "hotel_master" }
