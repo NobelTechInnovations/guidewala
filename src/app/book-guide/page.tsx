@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { FaShieldAlt, FaArrowRight } from "react-icons/fa";
 import PageBanner from "@/components/booking/PageBanner";
+import UploadedImage from "@/components/UploadedImage";
 import { dbConnect } from "@/lib/mongodb";
+import { existingMediaPath } from "@/lib/media.server";
 import { CityMaster, PackageTitleMaster } from "@/models";
 
 export const metadata: Metadata = {
   title: "Book Your Guide | Guidewala",
   description: "Select a city and choose from government-approved local guide packages across India.",
 };
-
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "";
 
 type CityLean = { CITY_ID: string; CITY_NAME: string };
 type PackageLean = {
@@ -85,12 +84,12 @@ export default async function BookGuidePage({
                 className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col"
               >
                 <div className="relative aspect-[4/3] bg-slate-100">
-                  <Image
-                    src={`${IMG_BASE}img/pkgTitleImg/${p.PKG_IMAGE}`}
+                  <UploadedImage
+                    src={existingMediaPath("pkgTitleImg", p.PKG_IMAGE)}
                     alt={p.TITLE_NAME}
-                    fill
                     sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    placeholderLabel={p.TITLE_NAME}
                   />
                   <span className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/95 backdrop-blur text-gw-brand text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
                     <FaShieldAlt /> Verified Guide

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import PageBanner from "@/components/booking/PageBanner";
+import UploadedImage from "@/components/UploadedImage";
 import { dbConnect } from "@/lib/mongodb";
+import { existingMediaPath } from "@/lib/media.server";
 import { PromoCodeMaster, VendorDetails, CityMaster } from "@/models";
 
 export const metadata: Metadata = {
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
   description: "Browse all Guidewala partner coupons and exclusive deals.",
 };
 
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "";
+// Coupons and their uploaded images change at runtime (admin/vendor edits,
+// re-uploads), so render per request instead of baking them in at build.
+export const dynamic = "force-dynamic";
 
 type PromoLean = {
   PROMO_ID: string;
@@ -96,12 +99,12 @@ export default async function CouponsPage() {
                   {c.PROMO_DESC && <p className="text-sm text-slate-600 mt-4">{c.PROMO_DESC}</p>}
                 </div>
                 <div className="relative min-h-[220px] bg-slate-100">
-                  <Image
-                    src={`${IMG_BASE}img/PromoCode/${c.PROMO_CODE_IMG}`}
+                  <UploadedImage
+                    src={existingMediaPath("PromoCode", c.PROMO_CODE_IMG)}
                     alt={c.PROMO_TITLE}
-                    fill
                     sizes="(min-width:768px) 50vw, 100vw"
                     className="object-cover"
+                    placeholderLabel={c.PROMO_TITLE}
                   />
                 </div>
               </div>

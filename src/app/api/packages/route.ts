@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
+import { mediaAbsoluteUrl } from "@/lib/url";
+import { isShown } from "@/lib/packages";
 import { PackageTitleMaster, CityMaster } from "@/models";
-
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || `${process.env.NEXT_PUBLIC_SITE_URL || ""}/`;
 
 // Public read-only endpoint — list active guide packages, optionally
 // filtered by city. Used by the mobile app's Book Guide / Featured Tours
 // screens (the web app queries Mongo directly from Server Components).
+// The list itself is not filtered by SHOW_ON_HOME (that only curates the web
+// home carousel); `showOnHome` is exposed so clients can curate their own.
 export async function GET(req: NextRequest) {
   await dbConnect();
   const cityId = req.nextUrl.searchParams.get("city");
@@ -27,7 +29,8 @@ export async function GET(req: NextRequest) {
     cityId: p.CITY_ID,
     cityName: cityMap.get(p.CITY_ID) || "",
     amount: p.PKG_AMOUNT,
-    image: `${IMG_BASE}img/pkgTitleImg/${p.PKG_IMAGE}`,
+    image: mediaAbsoluteUrl("pkgTitleImg", p.PKG_IMAGE, req),
+    showOnHome: isShown(p.SHOW_ON_HOME) ? "Y" : "N",
   }));
 
   return NextResponse.json({ packages: result });

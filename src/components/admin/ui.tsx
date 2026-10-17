@@ -27,6 +27,25 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
   );
 }
 
+/** A titled card for one group of form fields. */
+export function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: ReactNode;
+}) {
+  return (
+    <Card className="p-6 mb-5">
+      <h2 className="font-display text-lg font-semibold text-slate-900">{title}</h2>
+      {description && <p className="text-sm text-slate-500 mt-0.5">{description}</p>}
+      <div className="mt-4">{children}</div>
+    </Card>
+  );
+}
+
 export function Badge({ tone, children }: { tone: "green" | "yellow" | "red" | "slate"; children: ReactNode }) {
   const tones = {
     green: "bg-green-50 text-green-700",
@@ -60,6 +79,47 @@ export function Field({ label, children, required }: { label: string; children: 
       </span>
       {children}
     </label>
+  );
+}
+
+/**
+ * Accessible on/off switch (the visible label is the switch's accessible
+ * name). Brand green when on. Only usable from client components.
+ */
+export function Toggle({
+  checked,
+  onChange,
+  label,
+  disabled,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  label: string;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className="inline-flex items-center gap-2.5 rounded-lg text-sm font-semibold text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-gw-brand/40 disabled:opacity-60"
+    >
+      <span
+        aria-hidden
+        className={`relative inline-block h-6 w-11 shrink-0 rounded-full transition-colors ${
+          checked ? "bg-gw-brand" : "bg-slate-300"
+        }`}
+      >
+        <span
+          className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+            checked ? "translate-x-5" : ""
+          }`}
+        />
+      </span>
+      {label}
+    </button>
   );
 }
 

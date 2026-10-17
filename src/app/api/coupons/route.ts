@@ -1,12 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
+import { mediaAbsoluteUrl } from "@/lib/url";
 import { PromoCodeMaster, VendorDetails, CityMaster } from "@/models";
-
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || `${process.env.NEXT_PUBLIC_SITE_URL || ""}/`;
 
 // Public read-only endpoint — all coupons with vendor/city info attached,
 // matching the web app's /coupons page.
-export async function GET() {
+export async function GET(req: NextRequest) {
   await dbConnect();
 
   const promos = await PromoCodeMaster.find({}).sort({ CREATED_ON: -1 }).lean();
@@ -28,7 +27,7 @@ export async function GET() {
       promoId: p.PROMO_ID,
       title: p.PROMO_TITLE,
       code: p.PROMO_CODE,
-      image: `${IMG_BASE}img/PromoCode/${p.PROMO_CODE_IMG}`,
+      image: mediaAbsoluteUrl("PromoCode", p.PROMO_CODE_IMG, req),
       description: p.PROMO_DESC,
       validFrom: p.VALID_FROM,
       validTo: p.VALID_TO,

@@ -109,6 +109,14 @@ body {
   transform: translateY(-3px);
 }
 
+/* Package page: keep the footer clear of the fixed mobile "Book Now" bar
+   (PriceCard.tsx MobileBookBar, hidden from lg up). */
+@media (max-width: 1023.98px) {
+  body:has([data-mobile-book-bar]) {
+    padding-bottom: 5.5rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;

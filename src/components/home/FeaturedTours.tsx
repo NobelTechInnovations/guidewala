@@ -1,8 +1,8 @@
 import { dbConnect } from "@/lib/mongodb";
+import { existingMediaPath } from "@/lib/media.server";
+import { SHOWN } from "@/lib/packages";
 import { PackageTitleMaster, CityMaster } from "@/models";
 import ToursCarousel, { TourSlide } from "./ToursCarousel";
-
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "";
 
 type PackageLean = {
   PKG_ID: number;
@@ -15,17 +15,22 @@ type PackageLean = {
 async function getSlides(): Promise<TourSlide[]> {
   await dbConnect();
   const [packages, cities] = await Promise.all([
-    PackageTitleMaster.find({ IS_ACTIVE: "Y" }).sort({ PKG_AMOUNT: -1 }).lean() as unknown as Promise<PackageLean[]>,
+    // SHOW_ON_HOME is the admin's per-package switch; missing counts as shown.
+    PackageTitleMaster.find({ IS_ACTIVE: "Y", SHOW_ON_HOME: SHOWN }).sort({ PKG_AMOUNT: -1 }).lean() as unknown as Promise<PackageLean[]>,
     CityMaster.find({}).lean() as unknown as Promise<{ CITY_ID: string; CITY_NAME: string }[]>,
   ]);
   const cityMap = new Map(cities.map((c) => [c.CITY_ID, c.CITY_NAME]));
 
+  // Dekho Rajasthan (package 19) gets its own hand-curated slide below, shown only
+  // while the package itself is active and "Show on Home" is on (the query above).
+  const showDekho = packages.some((p) => p.PKG_ID === 19);
+
   const dynamicSlides: TourSlide[] = packages
-    .filter((p) => p.PKG_ID !== 19) // Dekho Rajasthan gets its own hand-curated slide below
+    .filter((p) => p.PKG_ID !== 19)
     .map((p) => ({
       key: `pkg-${p.PKG_ID}`,
       href: `/packages/${p.PKG_ID}`,
-      img: `${IMG_BASE}img/pkgTitleImg/${p.PKG_IMAGE}`,
+      img: existingMediaPath("pkgTitleImg", p.PKG_IMAGE),
       title: p.TITLE_NAME,
       tag: cityMap.get(p.CITY_ID) || "Guided Tour",
       price: p.PKG_AMOUNT,
@@ -33,14 +38,18 @@ async function getSlides(): Promise<TourSlide[]> {
 
   // Hand-curated slides with real, rich content — placed first.
   const curatedSlides: TourSlide[] = [
-    {
-      key: "dekho-rajasthan",
-      href: "/tour-packages/dekho-rajasthan",
-      img: "/assets/img/raj/dr.jpg",
-      title: "Dekho Rajasthan — 8 Days / 7 Nights",
-      tag: "8D / 7N",
-      price: 45000,
-    },
+    ...(showDekho
+      ? [
+          {
+            key: "dekho-rajasthan",
+            href: "/tour-packages/dekho-rajasthan",
+            img: "/assets/img/raj/dr.jpg",
+            title: "Dekho Rajasthan — 8 Days / 7 Nights",
+            tag: "8D / 7N",
+            price: 45000,
+          },
+        ]
+      : []),
     {
       key: "chardham",
       href: "https://guidewala.co.in/CHARDHAM-PACKAGE.pdf",

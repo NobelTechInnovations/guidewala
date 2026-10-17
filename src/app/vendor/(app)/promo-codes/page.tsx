@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import { PageHeader, Card, Badge, EmptyState, Loading, PrimaryLink } from "@/components/admin/ui";
+import UploadedImage from "@/components/UploadedImage";
+import { mediaPath } from "@/lib/media";
 
 type Promo = {
   PROMO_ID: string;
@@ -15,8 +16,6 @@ type Promo = {
   VALID_TO: string;
   IS_ACTIVE: string;
 };
-
-const IMG_BASE = process.env.NEXT_PUBLIC_IMG_BASE || "";
 
 export default function VendorPromoCodeListPage() {
   const [promos, setPromos] = useState<Promo[] | null>(null);
@@ -71,7 +70,7 @@ export default function VendorPromoCodeListPage() {
                   <td className="px-5 py-3">
                     {p.PROMO_CODE_IMG && (
                       <div className="relative w-20 h-11 rounded-md overflow-hidden bg-slate-100">
-                        <Image src={`${IMG_BASE}/img/PromoCode/${p.PROMO_CODE_IMG}`} alt={p.PROMO_TITLE} fill sizes="80px" className="object-cover" />
+                        <UploadedImage src={mediaPath("PromoCode", p.PROMO_CODE_IMG)} alt={p.PROMO_TITLE} sizes="80px" className="object-cover" />
                       </div>
                     )}
                   </td>

@@ -27,10 +27,13 @@ export default function GuideBookingForm({
   pkgId,
   pkgAmount,
   hotels,
+  cancellationPolicy,
 }: {
   pkgId: number;
   pkgAmount: number;
   hotels: string[];
+  /** Shown as a note above the submit button; the form still works without it. */
+  cancellationPolicy?: string;
 }) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -208,10 +211,20 @@ export default function GuideBookingForm({
         </div>
       </div>
 
+      {cancellationPolicy && (
+        <p className="mt-8 text-xs leading-relaxed text-slate-500">
+          By confirming you agree to our cancellation policy:{" "}
+          <span className="whitespace-pre-line">{cancellationPolicy}</span>{" "}
+          <a href="#cancellation" className="font-semibold text-gw-brand underline underline-offset-2">
+            Read full policy
+          </a>
+        </p>
+      )}
+
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="mt-8 w-full bg-gw-red hover:bg-red-600 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition-colors"
+        className={`${cancellationPolicy ? "mt-3" : "mt-8"} w-full bg-gw-red hover:bg-red-600 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition-colors`}
       >
         {status === "submitting" ? "SENDING..." : "CONFIRM BOOKING"}
       </button>
