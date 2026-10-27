@@ -4,15 +4,7 @@ import { Suspense } from "react";
 import { FaUserTie, FaTaxi, FaHotel, FaCertificate, FaWallet, FaHeart, FaHandshake, FaStar, FaShieldAlt } from "react-icons/fa";
 import FeaturedTours from "@/components/home/FeaturedTours";
 import CouponsSection from "@/components/home/CouponsSection";
-
-const DESTINATIONS = [
-  { name: "DELHI", img: "/assets/img/delhi.jpg", pkgId: "delhi", fit: "cover" as const },
-  { name: "AGRA", img: "/assets/img/agra.jpg", pkgId: "agra", fit: "contain" as const },
-  { name: "JAIPUR", img: "/assets/img/jaipur.jpg", pkgId: "jaipur", fit: "cover" as const },
-  { name: "UDAIPUR", img: "/assets/img/udaipur.jpg", pkgId: "udaipur", fit: "cover" as const },
-  { name: "JODHPUR", img: "/assets/img/jodhpur.jpg", pkgId: "jodhpur", fit: "cover" as const },
-  { name: "JAISALMER", img: "/assets/img/jaisalmer.jpg", pkgId: "jaisalmer", fit: "cover" as const },
-];
+import TrendingDestinations from "@/components/home/TrendingDestinations";
 
 const SERVICES = [
   {
@@ -225,43 +217,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trending destinations */}
-      <section className="py-16 md:py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="text-center mb-10 md:mb-12">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Trending Destinations
-            </h2>
-            <div className="w-20 md:w-24 h-1 bg-gw-green mx-auto mt-4 rounded-full" />
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-5">
-            {DESTINATIONS.map((d) => (
-              <Link
-                key={d.name}
-                href={`/packages/${d.pkgId}`}
-                className={`relative rounded-2xl overflow-hidden aspect-[3/4] group shadow-md md:shadow-lg border border-slate-200 ${
-                  d.fit === "contain" ? "bg-slate-200 flex items-center justify-center p-2" : ""
-                }`}
-              >
-                <Image
-                  src={d.img}
-                  alt={d.name}
-                  fill
-                  sizes="(min-width: 1024px) 16vw, (min-width: 768px) 33vw, 45vw"
-                  className={`group-hover:scale-110 transition-transform duration-700 ${
-                    d.fit === "contain" ? "object-contain" : "object-cover object-center"
-                  }`}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                <span className="absolute bottom-3 md:bottom-4 left-0 w-full text-center text-white font-bold tracking-widest text-sm md:text-lg drop-shadow-md uppercase z-10">
-                  {d.name}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      <Suspense fallback={null}>
+        <TrendingDestinations />
+      </Suspense>
 
       <Suspense fallback={null}>
         <CouponsSection />
