@@ -5,6 +5,9 @@ import PageBanner from "@/components/booking/PageBanner";
 import { dbConnect } from "@/lib/mongodb";
 import { BlogPost } from "@/models";
 
+// Posts are added from admin at any time, so render per request instead of at build.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Blog | Guidewala",
   description: "Travel stories, guides, and tips from the Guidewala team — heritage, culture, and hidden corners of India.",
