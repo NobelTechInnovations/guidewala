@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import { BlogPost } from "@/models";
+import { blogContentToHtml } from "@/lib/markdown";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -33,7 +34,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     {
       TITLE: title,
       EXCERPT: excerpt || "",
-      CONTENT_HTML: contentHtml,
+      CONTENT_HTML: blogContentToHtml(contentHtml),
+      CONTENT_MD: contentHtml,
       COVER_IMAGE: coverImage || "",
       AUTHOR_NAME: authorName || "Team Guidewala",
       TAGS: tags ? tags.split(",").map((t) => t.trim()).filter(Boolean) : [],

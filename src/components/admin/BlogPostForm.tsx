@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useRef, useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { FaTimesCircle } from "react-icons/fa";
+import { FaTimesCircle, FaUpload, FaImage } from "react-icons/fa";
+import { blogContentToHtml } from "@/lib/markdown";
 
 export type BlogPostFormValues = {
   title: string;
@@ -33,6 +34,37 @@ export default function BlogPostForm({
   });
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<"" | "cover" | "inline">("");
+  const [preview, setPreview] = useState(false);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
+  /** Uploads one image to /api/admin/blog/upload and returns its site path. */
+  const upload = async (file: File, kind: "cover" | "inline") => {
+    setError("");
+    setUploading(kind);
+    try {
+      const fd = new FormData();
+      fd.set("image", file);
+      const res = await fetch("/api/admin/blog/upload", { method: "POST", body: fd });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok || !d.url) throw new Error(d.error || "Upload failed.");
+      return d.url as string;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed.");
+      return null;
+    } finally {
+      setUploading("");
+    }
+  };
+
+  const insertImage = async (file: File) => {
+    const url = await upload(file, "inline");
+    if (!url) return;
+    const el = contentRef.current;
+    const pos = el ? el.selectionStart : form.contentHtml.length;
+    const snippet = `\n\n![${file.name.replace(/\.[^.]+$/, "")}](${url})\n\n`;
+    set("contentHtml", form.contentHtml.slice(0, pos) + snippet + form.contentHtml.slice(pos));
+  };
 
   const set = <K extends keyof BlogPostFormValues>(key: K, value: BlogPostFormValues[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -85,13 +117,35 @@ export default function BlogPostForm({
       </div>
 
       <div>
-        <label className="frm-label">Cover Image URL</label>
-        <input
-          className="modern-input"
-          value={form.coverImage}
-          onChange={(e) => set("coverImage", e.target.value)}
-          placeholder="/assets/img/... or https://..."
-        />
+        <label className="frm-label">Cover Image</label>
+        <div className="flex flex-wrap items-center gap-4">
+          {form.coverImage && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={form.coverImage} alt="" className="h-20 w-32 object-cover rounded-lg border border-slate-200" />
+          )}
+          <label className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-lg text-sm cursor-pointer">
+            <FaUpload /> {uploading === "cover" ? "Uploading…" : form.coverImage ? "Change image" : "Upload image"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+              className="hidden"
+              disabled={!!uploading}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (file) {
+                  const url = await upload(file, "cover");
+                  if (url) set("coverImage", url);
+                }
+              }}
+            />
+          </label>
+          {form.coverImage && (
+            <button type="button" onClick={() => set("coverImage", "")} className="text-sm text-red-600 font-medium">
+              Remove
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -111,13 +165,49 @@ export default function BlogPostForm({
       </div>
 
       <div>
-        <label className="frm-label">Content (HTML) *</label>
-        <textarea
-          className="modern-input h-72 font-mono text-xs resize-y"
-          value={form.contentHtml}
-          onChange={(e) => set("contentHtml", e.target.value)}
-          placeholder="<p>Write your post here — basic HTML tags like &lt;p&gt;, &lt;h3&gt;, &lt;strong&gt;, &lt;img&gt; work.</p>"
-        />
+        <div className="flex items-center justify-between gap-3 mb-1.5">
+          <label className="frm-label !mb-0">Content *</label>
+          <div className="flex items-center gap-2">
+            <label className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg cursor-pointer">
+              <FaImage /> {uploading === "inline" ? "Uploading…" : "Insert image"}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                className="hidden"
+                disabled={!!uploading}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (file) insertImage(file);
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => setPreview((p) => !p)}
+              className="text-xs font-bold text-gw-brand bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg"
+            >
+              {preview ? "Edit" : "Preview"}
+            </button>
+          </div>
+        </div>
+        {preview ? (
+          <div
+            className="prose prose-slate max-w-none border border-slate-200 rounded-lg p-4 min-h-72"
+            dangerouslySetInnerHTML={{ __html: blogContentToHtml(form.contentHtml) }}
+          />
+        ) : (
+          <textarea
+            ref={contentRef}
+            className="modern-input h-72 resize-y"
+            value={form.contentHtml}
+            onChange={(e) => set("contentHtml", e.target.value)}
+            placeholder={"Write normally — just type your text.\n\nOptional formatting:\n# Heading\n**bold**  *italic*\n- list item\n[link text](https://...)"}
+          />
+        )}
+        <p className="text-xs text-slate-400 mt-1.5">
+          Plain text works. Blank line = new paragraph. Optional: # heading, **bold**, *italic*, - list, [text](link).
+        </p>
       </div>
 
       <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">

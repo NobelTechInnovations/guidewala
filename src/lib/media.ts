@@ -16,6 +16,7 @@ export const UPLOAD_DIRS = [
   "pkgGallery",
   "pkgBrochure",
   "PromoCode",
+  "blogImg",
 ] as const;
 
 export type UploadDir = (typeof UPLOAD_DIRS)[number];

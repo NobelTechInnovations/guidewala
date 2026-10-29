@@ -43,7 +43,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     <main>
       {post.COVER_IMAGE ? (
         <div className="relative h-[40vh] min-h-[280px] bg-slate-900">
-          <Image src={post.COVER_IMAGE} alt={post.TITLE} fill sizes="100vw" className="object-cover opacity-80" />
+          <Image src={post.COVER_IMAGE} alt={post.TITLE} fill unoptimized sizes="100vw" className="object-cover opacity-80" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20" />
         </div>
       ) : (

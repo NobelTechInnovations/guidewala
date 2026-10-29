@@ -7,6 +7,7 @@ type PostLean = {
   TITLE: string;
   EXCERPT: string;
   CONTENT_HTML: string;
+  CONTENT_MD?: string;
   COVER_IMAGE: string;
   AUTHOR_NAME: string;
   TAGS: string[];
@@ -27,7 +28,7 @@ export default async function EditBlogPostPage({ params }: { params: Promise<{ i
         initial={{
           title: post.TITLE,
           excerpt: post.EXCERPT,
-          contentHtml: post.CONTENT_HTML,
+          contentHtml: post.CONTENT_MD || post.CONTENT_HTML,
           coverImage: post.COVER_IMAGE,
           authorName: post.AUTHOR_NAME,
           tags: post.TAGS?.join(", ") || "",
