@@ -55,6 +55,7 @@ export default async function BlogListPage() {
                   {p.COVER_IMAGE ? (
                     <Image
                       src={p.COVER_IMAGE}
+                      unoptimized
                       alt={p.TITLE}
                       fill
                       sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import { BlogPost } from "@/models";
+import { blogContentToHtml } from "@/lib/markdown";
 
 function slugify(title: string) {
   return title
@@ -45,7 +46,8 @@ export async function POST(req: NextRequest) {
     TITLE: title,
     SLUG: slug,
     EXCERPT: excerpt || "",
-    CONTENT_HTML: contentHtml,
+    CONTENT_HTML: blogContentToHtml(contentHtml),
+    CONTENT_MD: contentHtml,
     COVER_IMAGE: coverImage || "",
     AUTHOR_NAME: authorName || "Team Guidewala",
     TAGS: tags ? tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
