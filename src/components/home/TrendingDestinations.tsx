@@ -2,9 +2,9 @@ import Link from "next/link";
 import UploadedImage from "@/components/UploadedImage";
 import { destinationsFrom, getActivePackages } from "@/lib/destinations";
 
-/** Cities that currently have active packages — driven entirely by the database. */
+/** Cities that currently have active guide services — driven entirely by the database. */
 export default async function TrendingDestinations() {
-  const destinations = destinationsFrom(await getActivePackages());
+  const destinations = destinationsFrom(await getActivePackages("guide"));
   if (destinations.length === 0) return null;
 
   return (

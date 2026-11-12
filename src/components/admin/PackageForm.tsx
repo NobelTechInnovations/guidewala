@@ -6,7 +6,7 @@ import { FaSave, FaPlus, FaTimes } from "react-icons/fa";
 import { Badge, Field, Section, Toggle, inputCls } from "@/components/admin/ui";
 import ListField from "@/components/admin/ListField";
 import UploadedImage from "@/components/UploadedImage";
-import { INCLUDE_OPTIONS, TOUR_TYPES, linesToList } from "@/lib/packages";
+import { INCLUDE_OPTIONS, TOUR_TYPES, linesToList, type PackageType } from "@/lib/packages";
 import { DEFAULT_CANCELLATION_POLICY } from "@/lib/policies";
 import { mediaPath } from "@/lib/media";
 
@@ -87,8 +87,11 @@ export default function PackageForm({
   pkgId,
   initial,
   missing,
+  pkgType = "tour",
 }: {
   pkgId?: number;
+  /** Tour package or city guide service — same form, saved to the matching admin section. */
+  pkgType?: PackageType;
   initial?: Partial<PackageFormValues>;
   missing?: MissingMedia;
 }) {
@@ -155,6 +158,7 @@ export default function PackageForm({
     try {
       // The form owns the whole record, so every scalar / list key is sent on every save.
       const fd = new FormData();
+      fd.set("pkgType", pkgType);
       fd.set("title", v.title.trim());
       fd.set("cityId", v.cityId);
       fd.set("amount", v.amount.trim());
@@ -191,7 +195,7 @@ export default function PackageForm({
         const body: { error?: string } = await res.json().catch(() => ({}));
         throw new Error(body.error || "Save failed.");
       }
-      router.push("/admin/packages");
+      router.push(pkgType === "guide" ? "/admin/guide-services" : "/admin/packages");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed.");

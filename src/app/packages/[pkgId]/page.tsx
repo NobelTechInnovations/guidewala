@@ -26,6 +26,7 @@ import {
   sortItinerary,
   type ItineraryDoc,
   type PackageDoc,
+  typeFilter,
 } from "@/lib/packages";
 import { cancellationPolicyFor, policySummary } from "@/lib/policies";
 import { PackageTitleMaster, PackageDescDetails, CityMaster, HotelMaster } from "@/models";
@@ -55,7 +56,7 @@ const getPackage = cache(async (pkgId: number) => {
     // Hidden itinerary items (IS_ACTIVE "N") never reach the page.
     PackageDescDetails.find({ PKG_ID: pkgId, IS_ACTIVE: SHOWN }).lean() as unknown as ItineraryDoc[],
     HotelMaster.find({ CITY_ID: pkg.CITY_ID, IS_ACTIVE: "Y" }).lean() as unknown as { HOTEL_NAME: string }[],
-    PackageTitleMaster.find({ CITY_ID: pkg.CITY_ID, IS_ACTIVE: "Y", PKG_ID: { $ne: pkgId } })
+    PackageTitleMaster.find({ CITY_ID: pkg.CITY_ID, IS_ACTIVE: "Y", PKG_ID: { $ne: pkgId }, ...typeFilter(pkg.PKG_TYPE === "guide" ? "guide" : "tour") })
       .limit(3)
       .lean() as unknown as PackageDoc[],
   ]);

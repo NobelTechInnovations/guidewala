@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
+import { isPackageType, typeFilter } from "@/lib/packages";
 import { PackageTitleMaster, CityMaster } from "@/models";
 import { nextNumericId } from "@/lib/ids";
 import { mediaExists } from "@/lib/media.server";
 import { parsePackageForm, readForm, formErrorResponse } from "./fields";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // ?type=tour|guide splits Tour Packages from Guide Services in admin.
+  const type = req.nextUrl.searchParams.get("type");
   await dbConnect();
   const [packages, cities] = await Promise.all([
-    PackageTitleMaster.find({}).sort({ CREATED_ON: -1 }).lean(),
+    PackageTitleMaster.find(isPackageType(type) ? typeFilter(type) : {}).sort({ CREATED_ON: -1 }).lean(),
     CityMaster.find({}).select("CITY_ID CITY_NAME -_id").lean(),
   ]);
   const cityMap = new Map(cities.map((c) => [c.CITY_ID, c.CITY_NAME]));
