@@ -1,6 +1,6 @@
 import { dbConnect } from "@/lib/mongodb";
 import { existingMediaPath } from "@/lib/media.server";
-import { SHOWN, durationLabel } from "@/lib/packages";
+import { SHOWN, durationLabel, typeFilter } from "@/lib/packages";
 import { PackageTitleMaster, CityMaster } from "@/models";
 import ToursCarousel, { TourSlide } from "./ToursCarousel";
 
@@ -18,7 +18,7 @@ async function getSlides(): Promise<TourSlide[]> {
   await dbConnect();
   const [packages, cities] = await Promise.all([
     // Only what the admin switched on: active + "Show on Home" (missing counts as shown).
-    PackageTitleMaster.find({ IS_ACTIVE: "Y", SHOW_ON_HOME: SHOWN }).sort({ PKG_AMOUNT: -1 }).lean() as unknown as Promise<PackageLean[]>,
+    PackageTitleMaster.find({ IS_ACTIVE: "Y", SHOW_ON_HOME: SHOWN, ...typeFilter("tour") }).sort({ PKG_AMOUNT: -1 }).lean() as unknown as Promise<PackageLean[]>,
     CityMaster.find({}).lean() as unknown as Promise<{ CITY_ID: string; CITY_NAME: string }[]>,
   ]);
   const cityMap = new Map(cities.map((c) => [c.CITY_ID, c.CITY_NAME]));

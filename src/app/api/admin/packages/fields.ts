@@ -1,4 +1,4 @@
-import { INCLUDE_OPTIONS, TOUR_TYPES } from "@/lib/packages";
+import { INCLUDE_OPTIONS, TOUR_TYPES, isPackageType } from "@/lib/packages";
 import { UploadError, isImageFile, saveAdminUpload } from "@/lib/upload";
 
 /**
@@ -223,6 +223,12 @@ export function parseScalarFields(form: FormData, mode: FormMode): PackageChange
   const isActive = readFlag(form, "isActive");
   if (isActive) set.IS_ACTIVE = isActive;
   else if (create) set.IS_ACTIVE = "Y";
+
+  const pkgType = readText(form, "pkgType")?.trim();
+  if (pkgType !== undefined && pkgType !== "") {
+    if (!isPackageType(pkgType)) throw new PackageFormError('pkgType must be "tour" or "guide".');
+    set.PKG_TYPE = pkgType;
+  } else if (create) set.PKG_TYPE = "tour";
 
   const showOnHome = readFlag(form, "showOnHome");
   if (showOnHome) set.SHOW_ON_HOME = showOnHome;

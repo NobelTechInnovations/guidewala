@@ -1,7 +1,7 @@
 import { dbConnect } from "@/lib/mongodb";
 import { CityMaster, PackageTitleMaster } from "@/models";
 import { existingMediaPath } from "@/lib/media.server";
-import type { PackageDoc } from "@/lib/packages";
+import { typeFilter, type PackageDoc, type PackageType } from "@/lib/packages";
 
 /** Bundled city photos; any other city falls back to one of its package covers. */
 const CITY_PHOTOS: Record<string, string> = {
@@ -17,11 +17,11 @@ const CITY_PHOTOS: Record<string, string> = {
 export type PackageCard = PackageDoc & { CITY_NAME: string; imageSrc: string | null };
 export type Destination = { cityId: string; name: string; img: string | null; count: number };
 
-/** Active packages (newest first) with their city name and a usable cover path. */
-export async function getActivePackages(): Promise<PackageCard[]> {
+/** Active packages of one type (newest first) with their city name and a usable cover path. */
+export async function getActivePackages(type: PackageType): Promise<PackageCard[]> {
   await dbConnect();
   const [packages, cities] = await Promise.all([
-    PackageTitleMaster.find({ IS_ACTIVE: "Y" }).sort({ CREATED_ON: -1 }).lean() as unknown as Promise<PackageDoc[]>,
+    PackageTitleMaster.find({ IS_ACTIVE: "Y", ...typeFilter(type) }).sort({ CREATED_ON: -1 }).lean() as unknown as Promise<PackageDoc[]>,
     CityMaster.find({}).select("CITY_ID CITY_NAME -_id").lean() as unknown as Promise<{ CITY_ID: string; CITY_NAME: string }[]>,
   ]);
   const cityName = new Map(cities.map((c) => [c.CITY_ID, c.CITY_NAME]));

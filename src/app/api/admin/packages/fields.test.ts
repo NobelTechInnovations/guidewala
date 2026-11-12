@@ -39,6 +39,7 @@ test("create applies defaults and maps every scalar field", () => {
     PKG_AMOUNT: 100,
     PKG_DESC: "",
     IS_ACTIVE: "Y",
+    PKG_TYPE: "tour",
     SHOW_ON_HOME: "Y",
     ROUTE: [],
     INCLUDES: [],

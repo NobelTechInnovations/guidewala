@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function TourPackagesPage() {
-  const packages = await getActivePackages();
+  const packages = await getActivePackages("tour");
 
   return (
     <main>

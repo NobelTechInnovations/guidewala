@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import { mediaAbsoluteUrl } from "@/lib/url";
-import { isShown } from "@/lib/packages";
+import { isPackageType, isShown, typeFilter } from "@/lib/packages";
 import { PackageTitleMaster, CityMaster } from "@/models";
 
 // Public read-only endpoint — list active guide packages, optionally
@@ -13,7 +13,9 @@ export async function GET(req: NextRequest) {
   await dbConnect();
   const cityId = req.nextUrl.searchParams.get("city");
 
-  const filter: Record<string, string> = { IS_ACTIVE: "Y" };
+  // ?type=guide|tour narrows the list; without it every active package is returned (each has `type`).
+  const type = req.nextUrl.searchParams.get("type");
+  const filter: Record<string, unknown> = { IS_ACTIVE: "Y", ...(isPackageType(type) ? typeFilter(type) : {}) };
   if (cityId) filter.CITY_ID = cityId;
 
   const [packages, cities] = await Promise.all([
@@ -31,6 +33,7 @@ export async function GET(req: NextRequest) {
     amount: p.PKG_AMOUNT,
     image: mediaAbsoluteUrl("pkgTitleImg", p.PKG_IMAGE, req),
     showOnHome: isShown(p.SHOW_ON_HOME) ? "Y" : "N",
+    type: p.PKG_TYPE === "guide" ? "guide" : "tour",
   }));
 
   return NextResponse.json({ packages: result });

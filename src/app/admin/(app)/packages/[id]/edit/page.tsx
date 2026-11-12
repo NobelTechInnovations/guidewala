@@ -40,7 +40,7 @@ function toFormValues(pkg: PackageDoc): PackageFormValues {
 
 export default function EditPackagePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [loaded, setLoaded] = useState<{ initial: PackageFormValues; missing: MissingMedia } | null>(null);
+  const [loaded, setLoaded] = useState<{ initial: PackageFormValues; missing: MissingMedia; type: "tour" | "guide" } | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -51,6 +51,7 @@ export default function EditPackagePage({ params }: { params: Promise<{ id: stri
         setLoaded({
           initial: toFormValues(d.pkg),
           missing: { image: !!d.imageMissing, gallery: d.galleryMissing ?? [] },
+          type: d.pkg.PKG_TYPE === "guide" ? "guide" : "tour",
         });
       })
       .catch((e) => setError(e instanceof Error ? e.message : "Could not load this package."));
@@ -58,9 +59,9 @@ export default function EditPackagePage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10">
-      <PageHeader title="Edit Package" />
+      <PageHeader title={loaded?.type === "guide" ? "Edit Guide Service" : "Edit Package"} />
       {loaded ? (
-        <PackageForm pkgId={Number(id)} initial={loaded.initial} missing={loaded.missing} />
+        <PackageForm pkgId={Number(id)} initial={loaded.initial} missing={loaded.missing} pkgType={loaded.type} />
       ) : error ? (
         <p className="text-red-500 text-sm">{error}</p>
       ) : (

@@ -16,6 +16,17 @@ export type MealOption = (typeof MEAL_OPTIONS)[number];
 export type TourType = (typeof TOUR_TYPES)[number];
 
 /**
+ * What a package record is: a multi-day tour package, or a city tour-guide
+ * service (shown on Book Guide, no itinerary). Missing = tour.
+ */
+export const PACKAGE_TYPES = ["tour", "guide"] as const;
+export type PackageType = (typeof PACKAGE_TYPES)[number];
+export const isPackageType = (v: unknown): v is PackageType => v === "tour" || v === "guide";
+/** Mongo filter selecting one type; tours also match legacy records with no type. */
+export const typeFilter = (type: PackageType) =>
+  type === "guide" ? { PKG_TYPE: "guide" } : { PKG_TYPE: { $ne: "guide" } };
+
+/**
  * Mongo filter for the "Y"/"N" visibility flags (SHOW_ON_HOME, IS_ACTIVE):
  * a missing flag counts as shown, so we exclude "N" rather than match "Y".
  */
@@ -59,6 +70,7 @@ export interface PackageDoc {
   BROCHURE?: string; // filename in pkgBrochure/
   CANCELLATION_POLICY?: string; // blank = site default
   SHOW_ON_HOME?: string; // "Y" | "N", missing = shown
+  PKG_TYPE?: PackageType;
 }
 
 /** One itinerary entry (package_desc_details row). */

@@ -1,20 +1,22 @@
 // Server-only: filesystem side of the media helpers (see media.ts for the
 // client-safe half). Don't import this from a client component.
 import fs from "fs";
+import os from "os";
 import path from "path";
 import { isUploadDir, mediaPath, type UploadDir } from "./media";
 
 /**
- * Where uploads live on disk. Defaults to <cwd>/public/img (the original
- * location); set UPLOAD_DIR to move it outside the app folder so a redeploy
- * can't wipe uploads. Files are served by /uploads/[...path]; note that with
- * the default (inside public/) Next's static handler can also serve them
- * directly after a restart, so prefer UPLOAD_DIR outside public/ in production.
- * (saveAdminUpload only ever stores allowlisted image/PDF extensions either way.)
+ * Where uploads live on disk. Must be OUTSIDE the app folder in production:
+ * hosts like Hostinger replace the whole app folder on every deploy, which
+ * wiped uploads kept in public/img. Order: UPLOAD_DIR if set; in production
+ * ~/guidewala-uploads (the hosting account's home folder survives deploys);
+ * in dev <cwd>/public/img. Files are served by /uploads/[...path].
  */
 export const UPLOAD_ROOT: string = process.env.UPLOAD_DIR
   ? path.resolve(process.env.UPLOAD_DIR)
-  : path.join(process.cwd(), "public", "img");
+  : process.env.NODE_ENV === "production"
+    ? path.join(os.homedir(), "guidewala-uploads")
+    : path.join(process.cwd(), "public", "img");
 
 const CONTENT_TYPES: Record<string, string> = {
   ".jpg": "image/jpeg",

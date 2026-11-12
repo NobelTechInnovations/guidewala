@@ -6,6 +6,7 @@ import UploadedImage from "@/components/UploadedImage";
 import { dbConnect } from "@/lib/mongodb";
 import { existingMediaPath } from "@/lib/media.server";
 import { CityMaster, PackageTitleMaster } from "@/models";
+import { typeFilter } from "@/lib/packages";
 
 export const metadata: Metadata = {
   title: "Book Your Guide | Guidewala",
@@ -30,7 +31,7 @@ async function getCities(): Promise<CityLean[]> {
 
 async function getPackagesForCity(cityId: string): Promise<PackageLean[]> {
   await dbConnect();
-  return (await PackageTitleMaster.find({ CITY_ID: cityId, IS_ACTIVE: "Y" })
+  return (await PackageTitleMaster.find({ CITY_ID: cityId, IS_ACTIVE: "Y", ...typeFilter("guide") })
     .sort({ PKG_AMOUNT: 1 })
     .lean()) as unknown as PackageLean[];
 }

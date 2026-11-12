@@ -10,6 +10,7 @@ import {
   FaUsers,
   FaHotel,
   FaBoxOpen,
+  FaMapMarkerAlt,
   FaTicketAlt,
   FaBook,
   FaTaxi,
@@ -53,7 +54,11 @@ const NAV: NavGroup[] = [
   },
   {
     title: "Package Master",
-    items: [{ href: "/admin/packages", label: "Packages", icon: FaBoxOpen }],
+    items: [
+      { href: "/admin/packages", label: "Tour Packages", icon: FaBoxOpen },
+      { href: "/admin/guide-services", label: "Guide Services", icon: FaUserTie },
+      { href: "/admin/cities", label: "Cities", icon: FaMapMarkerAlt },
+    ],
   },
   {
     title: "Vendor Master",
