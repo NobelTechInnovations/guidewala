@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaFacebookF, FaInstagram, FaTwitter, FaLinkedinIn } from "react-icons/fa";
+import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
 import ContactForm from "@/components/ContactForm";
+import { SOCIAL_LINKS } from "@/lib/site";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Contact Us | Guidewala",
   description: "Get in touch with Guidewala — we respond within 24 hours.",
-};
+  path: "/contact-us",
+});
 
 const SOCIALS = [
-  { Icon: FaFacebookF, label: "Facebook" },
-  { Icon: FaInstagram, label: "Instagram" },
-  { Icon: FaTwitter, label: "Twitter" },
-  { Icon: FaLinkedinIn, label: "LinkedIn" },
+  { Icon: FaFacebookF, label: "Facebook", href: SOCIAL_LINKS.facebook },
+  { Icon: FaInstagram, label: "Instagram", href: SOCIAL_LINKS.instagram },
+  { Icon: FaYoutube, label: "YouTube", href: SOCIAL_LINKS.youtube },
 ];
 
 export default function ContactUsPage() {
@@ -72,10 +74,12 @@ export default function ContactUsPage() {
             <div>
               <h4 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wide">Follow Us</h4>
               <div className="flex gap-3">
-                {SOCIALS.map(({ Icon, label }) => (
+                {SOCIALS.map(({ Icon, label, href }) => (
                   <a
                     key={label}
-                    href="#"
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     aria-label={label}
                     className="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-gw-brand hover:text-white transition-colors"
                   >

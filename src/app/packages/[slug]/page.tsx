@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import { FaShieldAlt, FaWallet } from "react-icons/fa";
 import GuideBookingForm from "@/components/booking/GuideBookingForm";
@@ -16,6 +16,8 @@ import SectionNav, { type NavSection } from "@/components/package/SectionNav";
 import TourHeader from "@/components/package/TourHeader";
 import TourIncludes from "@/components/package/TourIncludes";
 import { dbConnect } from "@/lib/mongodb";
+import { ensurePackageSlugs, packageHref } from "@/lib/packageSlugs";
+import { absUrl, jsonLd, pageMeta, titleCase, truncate } from "@/lib/seo";
 import { existingMediaPath } from "@/lib/media.server";
 import {
   SHOWN,
@@ -45,11 +47,22 @@ function whatsappHref(title: string, pkgId: number): string {
 }
 
 /** Everything the page shows. `cache` lets generateMetadata and the page share one lookup per request. */
-const getPackage = cache(async (pkgId: number) => {
-  if (!Number.isSafeInteger(pkgId)) return null; // "/packages/abc" -> 404, not a cast error
+const getPackage = cache(async (slug: string) => {
   await dbConnect();
-  const pkg = (await PackageTitleMaster.findOne({ PKG_ID: pkgId, IS_ACTIVE: "Y" }).lean()) as unknown as PackageDoc | null;
+  // Old numeric URLs (/packages/19) permanently redirect to the slug URL.
+  if (/^\d+$/.test(slug)) {
+    const byId = (await PackageTitleMaster.findOne({ PKG_ID: Number(slug), IS_ACTIVE: "Y" }).select("PKG_ID SLUG -_id").lean()) as
+      | { PKG_ID: number; SLUG?: string }
+      | null;
+    if (!byId) return null;
+    if (!byId.SLUG) await ensurePackageSlugs();
+    const fresh = (await PackageTitleMaster.findOne({ PKG_ID: byId.PKG_ID }).select("SLUG -_id").lean()) as { SLUG?: string } | null;
+    if (fresh?.SLUG) permanentRedirect(`/packages/${fresh.SLUG}`);
+    return null;
+  }
+  const pkg = (await PackageTitleMaster.findOne({ SLUG: slug, IS_ACTIVE: "Y" }).lean()) as unknown as PackageDoc | null;
   if (!pkg) return null;
+  const pkgId = pkg.PKG_ID;
 
   const [city, itinerary, hotels, related] = await Promise.all([
     CityMaster.findOne({ CITY_ID: pkg.CITY_ID }).lean() as unknown as { CITY_NAME: string } | null,
@@ -73,19 +86,35 @@ const getPackage = cache(async (pkgId: number) => {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ pkgId: string }>;
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { pkgId } = await params;
-  const data = await getPackage(Number(pkgId));
-  if (!data) return { title: "Package not found | Guidewala" };
+  const { slug } = await params;
+  const data = await getPackage(slug);
+  if (!data) return { title: "Package not found | Guidewala", robots: { index: false } };
   const { pkg, cityName } = data;
+  return pageMeta({
+    title: packageSeoTitle(pkg),
+    description: packageSeoDescription(pkg, cityName),
+    path: `/packages/${pkg.SLUG}`,
+    image: existingMediaPath("pkgTitleImg", pkg.PKG_IMAGE),
+  });
+}
+
+/** `${Title Case name} ${days} Days | Guidewala`, at most 60 chars. */
+function packageSeoTitle(pkg: PackageDoc): string {
+  const suffix = " | Guidewala";
+  const days = pkg.DURATION_DAYS && !/\bdays?\b/i.test(pkg.TITLE_NAME || "") ? ` ${pkg.DURATION_DAYS} Days` : "";
+  return truncate(`${titleCase(pkg.TITLE_NAME || "Tour Package")}${days}`, 60 - suffix.length) + suffix;
+}
+
+/** ~140–155 chars: destination, duration, "licensed guide" and starting price. */
+function packageSeoDescription(pkg: PackageDoc, cityName: string): string {
+  const name = titleCase(pkg.TITLE_NAME || "this tour");
+  const where = cityName && !name.toLowerCase().includes(cityName.toLowerCase()) ? ` in ${cityName}` : "";
   const duration = durationLabel(pkg.DURATION_DAYS, pkg.DURATION_NIGHTS);
-  return {
-    title: `${pkg.TITLE_NAME} | Guidewala`,
-    description: `${duration ? `${duration} · ` : ""}Book a government-approved guide for ${pkg.TITLE_NAME}${
-      cityName ? ` in ${cityName}` : ""
-    }.`,
-  };
+  const price = pkg.PKG_AMOUNT ? ` from ₹${pkg.PKG_AMOUNT.toLocaleString("en-IN")}` : "";
+  const text = `Book ${name}${where}${duration ? ` (${duration})` : ""} with a licensed guide${price}. Verified guides, clear pricing and easy booking with Guidewala.`;
+  return truncate(text, 155);
 }
 
 /** A page section that the sticky nav can jump to (scroll margin clears header + nav). */
@@ -103,14 +132,14 @@ function Section({ id, title, children }: { id: string; title: string; children:
 export default async function PackageDetailsPage({
   params,
 }: {
-  params: Promise<{ pkgId: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { pkgId } = await params;
-  const data = await getPackage(Number(pkgId));
+  const { slug } = await params;
+  const data = await getPackage(slug);
   if (!data) notFound();
 
   const { pkg, cityName, itinerary, hotels, related } = data;
-  const title = pkg.TITLE_NAME ?? "";
+  const title = titleCase(pkg.TITLE_NAME ?? "");
   const amount = pkg.PKG_AMOUNT ?? 0;
   const priceNote = pkg.PRICE_NOTE?.trim() || "per person";
   const policy = cancellationPolicyFor(pkg);
@@ -169,8 +198,54 @@ export default async function PackageDetailsPage({
     { id: "cancellation", label: "Cancellation Policy" },
   ];
 
+  // Structured data: the tour (with day-wise itinerary + offer) and its breadcrumb trail.
+  const url = absUrl(`/packages/${pkg.SLUG}`);
+  const isGuide = pkg.PKG_TYPE === "guide";
+  const tripLd = {
+    "@context": "https://schema.org",
+    "@type": "TouristTrip",
+    name: title,
+    description: htmlToText(pkg.PKG_DESC || "") || `${title}${cityName ? ` in ${cityName}` : ""} with a licensed Guidewala guide.`,
+    url,
+    ...(gallery[0] ? { image: gallery.map(absUrl) } : {}),
+    touristType: pkg.TOUR_TYPE || (isGuide ? "Guided city tour" : "Sightseeing"),
+    ...(itinerary.length
+      ? {
+          itinerary: {
+            "@type": "ItemList",
+            itemListElement: itinerary.map((item, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              name: (hasDayNo(item.DAY_NO) ? `Day ${item.DAY_NO}: ` : "") + (item.ITINERARY ?? ""),
+            })),
+          },
+        }
+      : {}),
+    offers: {
+      "@type": "Offer",
+      price: amount,
+      priceCurrency: "INR",
+      availability: "https://schema.org/InStock",
+      url,
+    },
+    provider: { "@id": absUrl("/#organization") },
+  };
+  const crumbsLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: absUrl("/") },
+      isGuide
+        ? { "@type": "ListItem", position: 2, name: "Book Guide", item: absUrl("/book-guide") }
+        : { "@type": "ListItem", position: 2, name: "Tour Packages", item: absUrl("/tour-packages") },
+      { "@type": "ListItem", position: 3, name: title, item: url },
+    ],
+  };
+
   return (
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(tripLd)} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(crumbsLd)} />
       <div className="mx-auto max-w-7xl px-6 pt-6 pb-16">
         <nav aria-label="Breadcrumb" className="mb-4 text-sm text-slate-500">
           <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -298,7 +373,8 @@ export default async function PackageDetailsPage({
                 <RelatedPackages
                   items={related.map((r) => ({
                     id: r.PKG_ID,
-                    title: r.TITLE_NAME ?? "",
+                    href: packageHref(r),
+                    title: titleCase(r.TITLE_NAME ?? ""),
                     amount: r.PKG_AMOUNT ?? 0,
                     image: existingMediaPath("pkgTitleImg", r.PKG_IMAGE),
                   }))}

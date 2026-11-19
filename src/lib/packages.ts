@@ -71,6 +71,7 @@ export interface PackageDoc {
   CANCELLATION_POLICY?: string; // blank = site default
   SHOW_ON_HOME?: string; // "Y" | "N", missing = shown
   PKG_TYPE?: PackageType;
+  SLUG?: string;
 }
 
 /** One itinerary entry (package_desc_details row). */

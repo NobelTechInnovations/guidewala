@@ -3,11 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import PageBanner from "@/components/booking/PageBanner";
 import HotelBookingForm from "@/components/booking/HotelBookingForm";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Hotel Booking | Guidewala",
   description: "Send a hotel booking enquiry — from budget stays to luxury heritage hotels across India.",
-};
+  path: "/hotel-booking",
+});
 
 export default function HotelBookingPage() {
   return (

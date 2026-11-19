@@ -3,6 +3,7 @@ import UploadedImage from "@/components/UploadedImage";
 
 export interface RelatedView {
   id: number;
+  href: string;
   title: string;
   amount: number;
   /** From `existingMediaPath`; null renders the placeholder. */
@@ -16,7 +17,7 @@ export default function RelatedPackages({ items }: { items: RelatedView[] }) {
       {items.map((r) => (
         <Link
           key={r.id}
-          href={`/packages/${r.id}`}
+          href={r.href}
           className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-lg"
         >
           <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">

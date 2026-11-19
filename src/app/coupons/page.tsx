@@ -4,11 +4,24 @@ import UploadedImage from "@/components/UploadedImage";
 import { dbConnect } from "@/lib/mongodb";
 import { existingMediaPath } from "@/lib/media.server";
 import { PromoCodeMaster, VendorDetails, CityMaster } from "@/models";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+/**
+ * Partner websites known to be unreachable — their "Visit website" link is hidden.
+ * TODO: remove an entry once the partner's site is back, or fix the URL in admin → Vendors.
+ */
+const DEAD_PARTNER_SITES = ["thanibani.com"];
+function isDeadPartnerSite(url?: string) {
+  const host = (url || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+  return DEAD_PARTNER_SITES.includes(host);
+}
+
+
+export const metadata: Metadata = pageMeta({
   title: "Coupons | Guidewala",
   description: "Browse all Guidewala partner coupons and exclusive deals.",
-};
+  path: "/coupons",
+});
 
 // Coupons and their uploaded images change at runtime (admin/vendor edits,
 // re-uploads), so render per request instead of baking them in at build.
@@ -48,7 +61,7 @@ async function getCoupons() {
       ...p,
       companyName: vendor?.COMPANY_NAME || "",
       address: vendor?.ADDRESS1 || "",
-      website: vendor?.WEBSITE || "",
+      website: isDeadPartnerSite(vendor?.WEBSITE) ? "" : vendor?.WEBSITE || "",
       cityName: vendor ? cityMap.get(vendor.CITY_ID) || "" : "",
     };
   });

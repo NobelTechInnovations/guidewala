@@ -22,8 +22,6 @@ const nextConfig = {
       // Guide photos / license scans are served from the admin panel domain —
       // matches the source app's `imgPath` app setting.
       { protocol: "https", hostname: "admin.guidewala.co.in" },
-      // Team photos / package imagery pulled from the guidewala.in WordPress site.
-      { protocol: "https", hostname: "guidewala.in" },
     ],
   },
 

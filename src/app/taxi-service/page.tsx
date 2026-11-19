@@ -3,11 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import PageBanner from "@/components/booking/PageBanner";
 import TaxiBookingForm from "@/components/booking/TaxiBookingForm";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Taxi Booking | Guidewala",
   description: "Send an enquiry for safe, sanitized taxi service anywhere in India.",
-};
+  path: "/taxi-service",
+});
 
 export default function TaxiServicePage() {
   return (

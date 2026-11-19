@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import fs from "fs";
+import path from "path";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -11,12 +13,13 @@ import {
   FaCompass,
 } from "react-icons/fa";
 import AnimatedCounter from "@/components/AnimatedCounter";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "About Us | Guidewala",
-  description:
-    "Guidewala was founded by Bhawani Singh Rathore to digitalize India's tourism sector — connecting travelers with government-approved guides.",
-};
+  description: "Guidewala was founded by Bhawani Singh Rathore to digitalize India's tourism sector — connecting travelers with government-approved guides.",
+  path: "/about-us",
+});
 
 const STATS = [
   { target: 45, label: "Team Experience" },
@@ -55,21 +58,26 @@ const VALUES = [
   },
 ];
 
+/** Team photos live in public/; show an initials avatar until a file is added. */
+function teamPhotoExists(src: string) {
+  return fs.existsSync(path.join(process.cwd(), "public", src));
+}
+
 const TEAM = [
   {
     name: "Jitender Sain",
     role: "Global Head — Business Enablement",
-    img: "https://guidewala.in/wp-content/uploads/2026/07/WhatsApp-Image-2026-07-08-at-12.12.11.jpeg",
+    img: "/assets/img/team/jitender-sain.jpg",
   },
   {
     name: "Prateek Kumar Sain",
     role: "Head — Business Technology",
-    img: "https://guidewala.in/wp-content/uploads/2026/07/WhatsApp-Image-2026-07-08-at-12.12.12.jpeg",
+    img: "/assets/img/team/prateek-kumar-sain.jpg",
   },
   {
     name: "Sanjeev Sharma",
     role: "Mentor — International Relations",
-    img: "https://guidewala.in/wp-content/uploads/2026/07/sanjeev-Sharma.png",
+    img: "/assets/img/team/sanjeev-sharma.jpg",
   },
 ];
 
@@ -277,13 +285,28 @@ export default function AboutUsPage() {
             {TEAM.map((t) => (
               <div key={t.name} className="text-center group">
                 <div className="relative w-40 h-40 mx-auto mb-6 rounded-full p-1 border-2 border-gw-brand/50 group-hover:border-gw-brand transition-colors">
-                  <Image
-                    src={t.img}
-                    alt={t.name}
-                    fill
-                    sizes="160px"
-                    className="object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-500 p-1"
-                  />
+                  {teamPhotoExists(t.img) ? (
+                    <Image
+                      src={t.img}
+                      alt={t.name}
+                      fill
+                      sizes="160px"
+                      className="object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-500 p-1"
+                    />
+                  ) : (
+                    // TODO: photo file not in the repo yet — add it under public/assets/img/team/.
+                    <div
+                      role="img"
+                      aria-label={t.name}
+                      className="w-full h-full rounded-full bg-gw-brand/20 flex items-center justify-center text-4xl font-bold text-white"
+                    >
+                      {t.name
+                        .split(" ")
+                        .map((w) => w[0])
+                        .slice(0, 2)
+                        .join("")}
+                    </div>
+                  )}
                 </div>
                 <h4 className="text-lg font-bold">{t.name}</h4>
                 <p className="text-gw-brand text-xs font-bold uppercase tracking-wider mt-1">{t.role}</p>

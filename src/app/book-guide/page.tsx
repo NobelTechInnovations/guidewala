@@ -7,11 +7,14 @@ import { dbConnect } from "@/lib/mongodb";
 import { existingMediaPath } from "@/lib/media.server";
 import { CityMaster, PackageTitleMaster } from "@/models";
 import { typeFilter } from "@/lib/packages";
+import { pageMeta } from "@/lib/seo";
+import { packageHref } from "@/lib/packageSlugs";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Book Your Guide | Guidewala",
   description: "Select a city and choose from government-approved local guide packages across India.",
-};
+  path: "/book-guide",
+});
 
 type CityLean = { CITY_ID: string; CITY_NAME: string };
 type PackageLean = {
@@ -20,6 +23,7 @@ type PackageLean = {
   CITY_ID: string;
   PKG_AMOUNT: number;
   PKG_IMAGE: string;
+  SLUG?: string;
 };
 
 async function getCities(): Promise<CityLean[]> {
@@ -81,7 +85,7 @@ export default async function BookGuidePage({
             {packages.map((p) => (
               <Link
                 key={p.PKG_ID}
-                href={`/packages/${p.PKG_ID}`}
+                href={packageHref(p)}
                 className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col"
               >
                 <div className="relative aspect-[4/3] bg-slate-100">

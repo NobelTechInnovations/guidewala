@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa";
 import { dbConnect } from "@/lib/mongodb";
 import { BlogPost } from "@/models";
+import { absUrl, jsonLd, pageMeta, truncate } from "@/lib/seo";
+import { SITE_LOGO, SITE_NAME } from "@/lib/site";
 
 type PostLean = {
   TITLE: string;
@@ -16,11 +18,17 @@ type PostLean = {
   TAGS: string[];
   PUBLISHED_ON: string;
   IS_PUBLISHED: boolean;
+  updatedAt?: string;
 };
 
 async function getPost(slug: string) {
   await dbConnect();
-  return (await BlogPost.findOne({ SLUG: slug, IS_PUBLISHED: true }).lean()) as unknown as PostLean | null;
+  const post = (await BlogPost.findOne({ SLUG: slug, IS_PUBLISHED: true }).lean()) as unknown as PostLean | null;
+  if (post) return post;
+  // A renamed slug ("…-2" → "…") keeps working: redirect the old suffixed URL permanently.
+  const base = slug.replace(/-\d+$/, "");
+  if (base !== slug && (await BlogPost.exists({ SLUG: base, IS_PUBLISHED: true }))) permanentRedirect(`/blog/${base}`);
+  return null;
 }
 
 export async function generateMetadata({
@@ -30,8 +38,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPost(slug);
-  if (!post) return { title: "Post not found | Guidewala" };
-  return { title: `${post.TITLE} | Guidewala Blog`, description: post.EXCERPT };
+  if (!post) return { title: "Post not found | Guidewala", robots: { index: false } };
+  return pageMeta({
+    title: `${truncate(post.TITLE, 46)} | Guidewala Blog`,
+    description: truncate(post.EXCERPT || post.TITLE, 155),
+    path: `/blog/${post.SLUG}`,
+    image: post.COVER_IMAGE || null,
+    type: "article",
+  });
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -39,8 +53,33 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const post = await getPost(slug);
   if (!post) notFound();
 
+  const url = absUrl(`/blog/${post.SLUG}`);
+  const postLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.TITLE,
+    description: post.EXCERPT,
+    ...(post.COVER_IMAGE ? { image: absUrl(post.COVER_IMAGE) } : {}),
+    datePublished: new Date(post.PUBLISHED_ON).toISOString(),
+    dateModified: new Date(post.updatedAt || post.PUBLISHED_ON).toISOString(),
+    author: { "@type": "Person", name: post.AUTHOR_NAME || "Team Guidewala" },
+    publisher: { "@type": "Organization", name: SITE_NAME, logo: { "@type": "ImageObject", url: absUrl(SITE_LOGO) } },
+    mainEntityOfPage: url,
+  };
+  const crumbsLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: absUrl("/") },
+      { "@type": "ListItem", position: 2, name: "Blog", item: absUrl("/blog") },
+      { "@type": "ListItem", position: 3, name: post.TITLE, item: url },
+    ],
+  };
+
   return (
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(postLd)} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(crumbsLd)} />
       {post.COVER_IMAGE ? (
         <div className="relative h-[40vh] min-h-[280px] bg-slate-900">
           <Image src={post.COVER_IMAGE} alt={post.TITLE} fill unoptimized sizes="100vw" className="object-cover opacity-80" />
