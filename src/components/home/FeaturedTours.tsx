@@ -3,6 +3,7 @@ import { existingMediaPath } from "@/lib/media.server";
 import { SHOWN, durationLabel, typeFilter } from "@/lib/packages";
 import { PackageTitleMaster, CityMaster } from "@/models";
 import ToursCarousel, { TourSlide } from "./ToursCarousel";
+import { packageHref } from "@/lib/packageSlugs";
 
 type PackageLean = {
   PKG_ID: number;
@@ -10,6 +11,7 @@ type PackageLean = {
   CITY_ID: string;
   PKG_AMOUNT: number;
   PKG_IMAGE: string;
+  SLUG?: string;
   DURATION_DAYS?: number;
   DURATION_NIGHTS?: number;
 };
@@ -25,7 +27,7 @@ async function getSlides(): Promise<TourSlide[]> {
 
   return packages.map((p) => ({
     key: `pkg-${p.PKG_ID}`,
-    href: `/packages/${p.PKG_ID}`,
+    href: packageHref(p),
     img: existingMediaPath("pkgTitleImg", p.PKG_IMAGE),
     title: p.TITLE_NAME,
     tag: durationLabel(p.DURATION_DAYS, p.DURATION_NIGHTS) || cityMap.get(p.CITY_ID) || "Guided Tour",

@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import LegalPage from "@/components/LegalPage";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Privacy Policy | Guidewala" };
+export const metadata: Metadata = pageMeta({
+  title: "Privacy Policy | Guidewala",
+  description: "How Guidewala collects, uses and protects your personal information when you book guides, taxis, hotels and tour packages with us.",
+  path: "/privacy-policy",
+});
 
 export default function PrivacyPolicyPage() {
   return (

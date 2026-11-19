@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { FaClock, FaShieldAlt, FaHandshake } from "react-icons/fa";
 import PageBanner from "@/components/booking/PageBanner";
 import GuideRegistrationForm from "@/components/GuideRegistrationForm";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Guide Registration | Guidewala",
   description: "Register as a government-approved tour guide in under 2 minutes and join India's fastest-growing guide network.",
-};
+  path: "/guide-registration",
+});
 
 const REASSURANCE = [
   { icon: FaClock, text: "Takes under 2 minutes" },

@@ -10,12 +10,13 @@ import {
   FaCamera,
 } from "react-icons/fa";
 import { ROUTE, ITINERARY, INCLUSIONS, PRICING } from "./content";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Dekho Rajasthan — 8 Days 7 Nights Tour | Guidewala",
-  description:
-    "A complete 8-day Rajasthan circuit covering Jaipur, Pushkar, Jaisalmer, Desert Camp, Jodhpur, Udaipur and Chittorgarh — with a government-approved guide throughout.",
-};
+  description: "A complete 8-day Rajasthan circuit covering Jaipur, Pushkar, Jaisalmer, Desert Camp, Jodhpur, Udaipur and Chittorgarh — with a government-approved guide throughout.",
+  path: "/tour-packages/dekho-rajasthan",
+});
 
 const GALLERY = ["r1.jpg", "r2.jpg", "r3.jpg", "r4.jpg", "r5.jpg", "r6.jpg"];
 

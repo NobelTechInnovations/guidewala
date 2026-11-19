@@ -5,11 +5,14 @@ import PageBanner from "@/components/booking/PageBanner";
 import UploadedImage from "@/components/UploadedImage";
 import { getActivePackages } from "@/lib/destinations";
 import { durationLabel } from "@/lib/packages";
+import { pageMeta } from "@/lib/seo";
+import { packageHref } from "@/lib/packageSlugs";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Tour Packages | Guidewala",
-  description: "Explore Guidewala's guided tour packages across India.",
-};
+  description: "India tour packages with licensed local guides — multi-day Rajasthan and North India tours with hotels, transport and sightseeing, booked directly with Guidewala.",
+  path: "/tour-packages",
+});
 
 // Packages are managed in admin, so list whatever is active right now.
 export const dynamic = "force-dynamic";
@@ -24,7 +27,7 @@ export default async function TourPackagesPage() {
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="text-center mb-12 max-w-2xl mx-auto">
           <h1 className="font-display text-3xl md:text-4xl font-semibold text-slate-900 mb-3 text-balance">
-            Best Tour Packages in India for Every Traveler
+            India Tour Packages with Licensed Local Guides
           </h1>
           <p className="text-slate-500">Handpicked guided experiences with government-approved guides.</p>
         </div>
@@ -38,7 +41,7 @@ export default async function TourPackagesPage() {
               return (
                 <Link
                   key={p.PKG_ID}
-                  href={`/packages/${p.PKG_ID}`}
+                  href={packageHref(p)}
                   className="group bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col"
                 >
                   <div className="relative aspect-[4/3] bg-slate-100">

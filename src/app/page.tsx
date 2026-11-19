@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import Image from "next/image";
+import { pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import { Suspense } from "react";
 import { FaUserTie, FaTaxi, FaHotel, FaCertificate, FaWallet, FaHeart, FaHandshake, FaStar, FaShieldAlt } from "react-icons/fa";
@@ -56,6 +58,13 @@ const DIFFERENTIATORS = [
 
 // Featured tours / coupons depend on uploaded files and admin toggles that
 // change at runtime, so render per request instead of baking them in at build.
+export const metadata: Metadata = pageMeta({
+  title: "Government Approved Tour Guides in India | Guidewala",
+  description:
+    "Book licensed, government approved tour guides in Jaipur, Agra, Delhi and across India, plus reliable taxis and hotels — all with Guidewala.",
+  path: "/",
+});
+
 export const dynamic = "force-dynamic";
 
 export default function Home() {
@@ -73,9 +82,12 @@ export default function Home() {
           <div className="inline-block bg-white/20 backdrop-blur-md border border-white/40 px-4 py-1 md:px-5 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase mb-4 md:mb-6 shadow-lg">
             #1 Trusted Guide Network
           </div>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-semibold mb-4 md:mb-6 leading-tight [text-shadow:0_2px_15px_rgba(0,0,0,0.6)] text-balance">
+          <p className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-semibold mb-4 md:mb-6 leading-tight [text-shadow:0_2px_15px_rgba(0,0,0,0.6)] text-balance">
             Discover India, <br />
             <span className="text-green-400 drop-shadow-md italic">Unfiltered.</span>
+          </p>
+          <h1 className="text-lg sm:text-xl md:text-3xl font-bold mb-3 max-w-3xl mx-auto px-2 [text-shadow:0_2px_15px_rgba(0,0,0,0.6)]">
+            Book Government Approved Tour Guides Across India
           </h1>
           <p className="text-base sm:text-lg md:text-2xl mb-6 md:mb-8 max-w-3xl mx-auto drop-shadow-md font-medium px-2 [text-shadow:0_2px_15px_rgba(0,0,0,0.6)]">
             Connect with Government Approved Local Guides, Book reliable taxis, and stay in a wide

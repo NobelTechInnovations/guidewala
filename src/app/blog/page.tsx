@@ -4,14 +4,16 @@ import Link from "next/link";
 import PageBanner from "@/components/booking/PageBanner";
 import { dbConnect } from "@/lib/mongodb";
 import { BlogPost } from "@/models";
+import { pageMeta } from "@/lib/seo";
 
 // Posts are added from admin at any time, so render per request instead of at build.
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Blog | Guidewala",
   description: "Travel stories, guides, and tips from the Guidewala team — heritage, culture, and hidden corners of India.",
-};
+  path: "/blog",
+});
 
 type PostLean = {
   _id: string;

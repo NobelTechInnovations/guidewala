@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FaLightbulb, FaLandmark, FaChartLine, FaLaptopHouse, FaEnvelope } from "react-icons/fa";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Careers | Guidewala",
   description: "Join Team Guidewala — open roles in digital marketing, sales, and tourist facilitation across India.",
-};
+  path: "/careers",
+});
 
 const CULTURE = [
   { icon: FaLightbulb, title: "Innovation", desc: "Work with latest tech" },

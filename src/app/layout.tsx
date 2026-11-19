@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Fraunces } from "next/font/google";
 import "./globals.css";
 import SiteChrome from "@/components/SiteChrome";
+import { OG_IMAGE, SITE_LOGO, SITE_NAME, SITE_PHONE, SITE_URL, SOCIAL_LINKS } from "@/lib/site";
+import { jsonLd } from "@/lib/seo";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -20,16 +22,40 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Guidewala | India's Most Trusted Guide Network",
   description:
     "Connect with Government Approved Local Guides, Book reliable taxis, and stay in a wide choice of hotels across India.",
   icons: { icon: "/favicon.ico" },
+  openGraph: {
+    siteName: SITE_NAME,
+    locale: "en_IN",
+    type: "website",
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: SITE_NAME }],
+  },
+  twitter: { card: "summary_large_image", images: [OG_IMAGE] },
+};
+
+/** Organization + TravelAgency, on every page. */
+const ORG_LD = {
+  "@context": "https://schema.org",
+  "@type": ["Organization", "TravelAgency"],
+  "@id": `${SITE_URL}/#organization`,
+  name: SITE_NAME,
+  url: SITE_URL,
+  logo: `${SITE_URL}${SITE_LOGO}`,
+  image: `${SITE_URL}${OG_IMAGE}`,
+  telephone: SITE_PHONE,
+  areaServed: { "@type": "Country", name: "India" },
+  founder: { "@type": "Person", name: "Bhawani Singh Rathore" },
+  sameAs: Object.values(SOCIAL_LINKS),
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
       <body className="antialiased flex flex-col min-h-screen">
+        <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(ORG_LD)} />
         <SiteChrome>{children}</SiteChrome>
       </body>
     </html>

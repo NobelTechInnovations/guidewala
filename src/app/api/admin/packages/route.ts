@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ensurePackageSlugs } from "@/lib/packageSlugs";
 import { dbConnect } from "@/lib/mongodb";
 import { isPackageType, typeFilter } from "@/lib/packages";
 import { PackageTitleMaster, CityMaster } from "@/models";
@@ -38,5 +39,6 @@ export async function POST(req: NextRequest) {
   const pkgId = await nextNumericId(PackageTitleMaster, "PKG_ID");
   await PackageTitleMaster.create({ ...changes.set, PKG_ID: pkgId, CREATED_ON: new Date() });
 
+  await ensurePackageSlugs(); // new package gets its public URL slug
   return NextResponse.json({ pkgId }, { status: 201 });
 }

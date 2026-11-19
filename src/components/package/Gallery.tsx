@@ -65,7 +65,7 @@ export default function Gallery({ images, title }: { images: string[]; title: st
         >
           <UploadedImage
             src={images[0]}
-            alt={title}
+            alt={`${title} – photo 1`}
             sizes={thumbs.length > 0 ? "(min-width:768px) 50vw, 100vw" : "100vw"}
             preload
             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -88,7 +88,7 @@ export default function Gallery({ images, title }: { images: string[]; title: st
                 >
                   <UploadedImage
                     src={src}
-                    alt=""
+                    alt={`${title} – photo ${index + 1}`}
                     sizes="25vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
@@ -254,7 +254,7 @@ function Lightbox({
                   i === index ? "opacity-100 ring-2 ring-white" : "opacity-50 hover:opacity-90"
                 }`}
               >
-                <UploadedImage src={src} alt="" sizes="64px" className="object-cover" />
+                <UploadedImage src={src} alt={`${title} – photo ${i + 1}`} sizes="64px" className="object-cover" />
               </button>
             ))}
           </div>

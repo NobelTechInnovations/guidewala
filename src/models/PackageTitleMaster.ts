@@ -37,6 +37,7 @@ const PackageTitleMasterSchema = new Schema(
     BROCHURE: String, // PDF filename in pkgBrochure/
     CANCELLATION_POLICY: String, // blank = site default
     SHOW_ON_HOME: String, // "Y" | "N", missing = shown
+    SLUG: { type: String, index: true }, // public URL /packages/<SLUG>, stable once set
     PKG_TYPE: String, // "tour" | "guide" — missing = tour (see packages.ts)
   },
   { collection: "package_title_master" }

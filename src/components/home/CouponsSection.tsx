@@ -35,6 +35,8 @@ async function getActiveCoupons(): Promise<CouponCardData[]> {
 
 export default async function CouponsSection() {
   const coupons = await getActiveCoupons();
+  // No active coupons → no "Exclusive Deals" section at all.
+  if (coupons.length === 0) return null;
 
   return (
     <section className="py-16 bg-white">
@@ -54,7 +56,7 @@ export default async function CouponsSection() {
           </Link>
         </div>
 
-        {coupons.length > 0 ? (
+        {coupons.length > 0 && (
           <div className="w-full">
             <div className="flex overflow-x-auto gap-5 py-5 px-1 [scrollbar-width:thin]">
               {coupons.map((c) => (
@@ -62,8 +64,6 @@ export default async function CouponsSection() {
               ))}
             </div>
           </div>
-        ) : (
-          <p className="text-slate-400 text-sm py-6">No active coupons right now — check back soon!</p>
         )}
       </div>
     </section>
