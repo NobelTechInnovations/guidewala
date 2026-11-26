@@ -19,6 +19,7 @@ import {
   FaEnvelopeOpenText,
   FaAddressCard,
   FaMailBulk,
+  FaSearch,
   FaSignOutAlt,
   FaBars,
   FaTimes,
@@ -46,7 +47,10 @@ const NAV: NavGroup[] = [
   },
   {
     title: "Settings",
-    items: [{ href: "/admin/email-templates", label: "Email Templates", icon: FaMailBulk }],
+    items: [
+      { href: "/admin/seo", label: "SEO", icon: FaSearch },
+      { href: "/admin/email-templates", label: "Email Templates", icon: FaMailBulk },
+    ],
   },
   {
     title: "Guide Master",

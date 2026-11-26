@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { pageMeta } from "@/lib/seo";
 import Link from "next/link";
 import { Suspense } from "react";
 import { FaUserTie, FaTaxi, FaHotel, FaCertificate, FaWallet, FaHeart, FaHandshake, FaStar, FaShieldAlt } from "react-icons/fa";
 import FeaturedTours from "@/components/home/FeaturedTours";
 import CouponsSection from "@/components/home/CouponsSection";
 import TrendingDestinations from "@/components/home/TrendingDestinations";
+import { seoMeta } from "@/lib/seo.server";
+import FaqSection from "@/components/FaqSection";
 
 const SERVICES = [
   {
@@ -58,12 +59,14 @@ const DIFFERENTIATORS = [
 
 // Featured tours / coupons depend on uploaded files and admin toggles that
 // change at runtime, so render per request instead of baking them in at build.
-export const metadata: Metadata = pageMeta({
-  title: "Government Approved Tour Guides in India | Guidewala",
-  description:
-    "Book licensed, government approved tour guides in Jaipur, Agra, Delhi and across India, plus reliable taxis and hotels — all with Guidewala.",
-  path: "/",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMeta({
+    title: "Government Approved Tour Guides in India | Guidewala",
+    description:
+      "Book licensed, government approved tour guides in Jaipur, Agra, Delhi and across India, plus reliable taxis and hotels — all with Guidewala.",
+    path: "/",
+  });
+}
 
 export const dynamic = "force-dynamic";
 
@@ -259,6 +262,7 @@ export default function Home() {
           </Link>
         </div>
       </section>
+      <FaqSection path="/" />
     </main>
   );
 }

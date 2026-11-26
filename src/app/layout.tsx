@@ -4,6 +4,7 @@ import "./globals.css";
 import SiteChrome from "@/components/SiteChrome";
 import { OG_IMAGE, SITE_LOGO, SITE_NAME, SITE_PHONE, SITE_URL, SOCIAL_LINKS } from "@/lib/site";
 import { jsonLd } from "@/lib/seo";
+import { getFooterLinks } from "@/lib/seo.server";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -51,12 +52,13 @@ const ORG_LD = {
   sameAs: Object.values(SOCIAL_LINKS),
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const footerLinks = await getFooterLinks();
   return (
     <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
       <body className="antialiased flex flex-col min-h-screen">
         <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(ORG_LD)} />
-        <SiteChrome>{children}</SiteChrome>
+        <SiteChrome footerLinks={footerLinks}>{children}</SiteChrome>
       </body>
     </html>
   );

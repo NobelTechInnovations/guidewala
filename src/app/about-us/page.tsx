@@ -13,13 +13,16 @@ import {
   FaCompass,
 } from "react-icons/fa";
 import AnimatedCounter from "@/components/AnimatedCounter";
-import { pageMeta } from "@/lib/seo";
+import { seoMeta } from "@/lib/seo.server";
+import FaqSection from "@/components/FaqSection";
 
-export const metadata: Metadata = pageMeta({
-  title: "About Us | Guidewala",
-  description: "Guidewala was founded by Bhawani Singh Rathore to digitalize India's tourism sector — connecting travelers with government-approved guides.",
-  path: "/about-us",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMeta({
+    title: "About Us | Guidewala",
+    description: "Guidewala was founded by Bhawani Singh Rathore to digitalize India's tourism sector — connecting travelers with government-approved guides.",
+    path: "/about-us",
+  });
+}
 
 const STATS = [
   { target: 45, label: "Team Experience" },
@@ -378,6 +381,7 @@ export default function AboutUsPage() {
           </div>
         </div>
       </section>
+      <FaqSection path="/about-us" />
     </main>
   );
 }

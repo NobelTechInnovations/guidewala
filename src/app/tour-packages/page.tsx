@@ -5,14 +5,17 @@ import PageBanner from "@/components/booking/PageBanner";
 import UploadedImage from "@/components/UploadedImage";
 import { getActivePackages } from "@/lib/destinations";
 import { durationLabel } from "@/lib/packages";
-import { pageMeta } from "@/lib/seo";
 import { packageHref } from "@/lib/packageSlugs";
+import { seoMeta } from "@/lib/seo.server";
+import FaqSection from "@/components/FaqSection";
 
-export const metadata: Metadata = pageMeta({
-  title: "Tour Packages | Guidewala",
-  description: "India tour packages with licensed local guides — multi-day Rajasthan and North India tours with hotels, transport and sightseeing, booked directly with Guidewala.",
-  path: "/tour-packages",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMeta({
+    title: "Tour Packages | Guidewala",
+    description: "India tour packages with licensed local guides — multi-day Rajasthan and North India tours with hotels, transport and sightseeing, booked directly with Guidewala.",
+    path: "/tour-packages",
+  });
+}
 
 // Packages are managed in admin, so list whatever is active right now.
 export const dynamic = "force-dynamic";
@@ -83,6 +86,7 @@ export default async function TourPackagesPage() {
           </div>
         )}
       </div>
+      <FaqSection path="/tour-packages" />
     </main>
   );
 }

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { FooterLinkGroup } from "@/lib/seo.server";
 import Link from "next/link";
 import {
   FaFacebookF,
@@ -34,7 +35,7 @@ const SOCIAL_LINKS = [
   { href: "https://wa.me/919829185267", Icon: FaWhatsapp, label: "WhatsApp" },
 ];
 
-export default function Footer() {
+export default function Footer({ keywordGroups = [] }: { keywordGroups?: FooterLinkGroup[] }) {
   return (
     <footer className="bg-[#002e16] text-white pt-20 pb-8 mt-auto border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6">
@@ -137,6 +138,32 @@ export default function Footer() {
             </div>
           </div>
         </div>
+
+        {/* Admin → SEO → Footer Keywords: crawlable keyword links, grouped as menu columns. */}
+        {keywordGroups.length > 0 && (
+          <nav aria-label="Popular searches" className="border-t border-white/10 pt-10 pb-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {keywordGroups.map((g) => (
+              <div key={g.group}>
+                <h4 className="text-white font-bold text-sm uppercase tracking-wider mb-4">{g.group}</h4>
+                <ul className="flex flex-wrap gap-x-3 gap-y-2 text-sm">
+                  {g.links.map((l) => (
+                    <li key={l.url + l.label}>
+                      {/^https?:\/\//.test(l.url) ? (
+                        <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 transition-colors">
+                          {l.label}
+                        </a>
+                      ) : (
+                        <Link href={l.url} className="text-gray-400 hover:text-green-400 transition-colors">
+                          {l.label}
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        )}
 
         <div className="border-t border-white/10 pt-8 text-center text-sm text-gray-500">
           <p>&copy; {new Date().getFullYear()} Guidewala Services LLP. All rights reserved.</p>
