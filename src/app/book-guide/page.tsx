@@ -7,14 +7,17 @@ import { dbConnect } from "@/lib/mongodb";
 import { existingMediaPath } from "@/lib/media.server";
 import { CityMaster, PackageTitleMaster } from "@/models";
 import { typeFilter } from "@/lib/packages";
-import { pageMeta } from "@/lib/seo";
 import { packageHref } from "@/lib/packageSlugs";
+import { seoMeta } from "@/lib/seo.server";
+import FaqSection from "@/components/FaqSection";
 
-export const metadata: Metadata = pageMeta({
-  title: "Book Your Guide | Guidewala",
-  description: "Select a city and choose from government-approved local guide packages across India.",
-  path: "/book-guide",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMeta({
+    title: "Book Your Guide | Guidewala",
+    description: "Select a city and choose from government-approved local guide packages across India.",
+    path: "/book-guide",
+  });
+}
 
 type CityLean = { CITY_ID: string; CITY_NAME: string };
 type PackageLean = {
@@ -121,6 +124,7 @@ export default async function BookGuidePage({
           </div>
         )}
       </div>
+      <FaqSection path="/book-guide" />
     </main>
   );
 }

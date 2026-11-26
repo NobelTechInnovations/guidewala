@@ -4,7 +4,7 @@ import UploadedImage from "@/components/UploadedImage";
 import { dbConnect } from "@/lib/mongodb";
 import { existingMediaPath } from "@/lib/media.server";
 import { PromoCodeMaster, VendorDetails, CityMaster } from "@/models";
-import { pageMeta } from "@/lib/seo";
+import { seoMeta } from "@/lib/seo.server";
 
 /**
  * Partner websites known to be unreachable — their "Visit website" link is hidden.
@@ -17,11 +17,13 @@ function isDeadPartnerSite(url?: string) {
 }
 
 
-export const metadata: Metadata = pageMeta({
-  title: "Coupons | Guidewala",
-  description: "Browse all Guidewala partner coupons and exclusive deals.",
-  path: "/coupons",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMeta({
+    title: "Coupons | Guidewala",
+    description: "Browse all Guidewala partner coupons and exclusive deals.",
+    path: "/coupons",
+  });
+}
 
 // Coupons and their uploaded images change at runtime (admin/vendor edits,
 // re-uploads), so render per request instead of baking them in at build.

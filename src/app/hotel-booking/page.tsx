@@ -3,13 +3,16 @@ import Image from "next/image";
 import Link from "next/link";
 import PageBanner from "@/components/booking/PageBanner";
 import HotelBookingForm from "@/components/booking/HotelBookingForm";
-import { pageMeta } from "@/lib/seo";
+import { seoMeta } from "@/lib/seo.server";
+import FaqSection from "@/components/FaqSection";
 
-export const metadata: Metadata = pageMeta({
-  title: "Hotel Booking | Guidewala",
-  description: "Send a hotel booking enquiry — from budget stays to luxury heritage hotels across India.",
-  path: "/hotel-booking",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMeta({
+    title: "Hotel Booking | Guidewala",
+    description: "Send a hotel booking enquiry — from budget stays to luxury heritage hotels across India.",
+    path: "/hotel-booking",
+  });
+}
 
 export default function HotelBookingPage() {
   return (
@@ -32,6 +35,7 @@ export default function HotelBookingPage() {
           </aside>
         </div>
       </div>
+      <FaqSection path="/hotel-booking" />
     </main>
   );
 }

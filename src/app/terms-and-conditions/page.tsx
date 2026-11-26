@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import LegalPage from "@/components/LegalPage";
 import { DEFAULT_CANCELLATION_POLICY } from "@/lib/policies";
-import { pageMeta } from "@/lib/seo";
+import { seoMeta } from "@/lib/seo.server";
 
-export const metadata: Metadata = pageMeta({
-  title: "Terms and Conditions | Guidewala",
-  description: "Guidewala's terms of use, booking and payment terms, and cancellation and refund policy for guide services, taxis, hotels and tour packages.",
-  path: "/terms-and-conditions",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMeta({
+    title: "Terms and Conditions | Guidewala",
+    description: "Guidewala's terms of use, booking and payment terms, and cancellation and refund policy for guide services, taxis, hotels and tour packages.",
+    path: "/terms-and-conditions",
+  });
+}
 
 export default function TermsAndConditionsPage() {
   return (

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CouponPopupProvider from "@/components/CouponPopup";
+import type { FooterLinkGroup } from "@/lib/seo.server";
 
 /**
  * The public site's header, footer, and coupon popup only belong on the
@@ -12,7 +13,7 @@ import CouponPopupProvider from "@/components/CouponPopup";
  * wraps every page, admin included), so this client wrapper checks the
  * current path instead.
  */
-export default function SiteChrome({ children }: { children: React.ReactNode }) {
+export default function SiteChrome({ children, footerLinks = [] }: { children: React.ReactNode; footerLinks?: FooterLinkGroup[] }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
   const isVendor = pathname.startsWith("/vendor");
@@ -23,7 +24,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
     <CouponPopupProvider>
       <Header />
       <div className="flex-grow">{children}</div>
-      <Footer />
+      <Footer keywordGroups={footerLinks} />
     </CouponPopupProvider>
   );
 }

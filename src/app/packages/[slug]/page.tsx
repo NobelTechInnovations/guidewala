@@ -17,7 +17,7 @@ import TourHeader from "@/components/package/TourHeader";
 import TourIncludes from "@/components/package/TourIncludes";
 import { dbConnect } from "@/lib/mongodb";
 import { ensurePackageSlugs, packageHref } from "@/lib/packageSlugs";
-import { absUrl, jsonLd, pageMeta, titleCase, truncate } from "@/lib/seo";
+import { absUrl, jsonLd, titleCase, truncate } from "@/lib/seo";
 import { existingMediaPath } from "@/lib/media.server";
 import {
   SHOWN,
@@ -32,6 +32,8 @@ import {
 } from "@/lib/packages";
 import { cancellationPolicyFor, policySummary } from "@/lib/policies";
 import { PackageTitleMaster, PackageDescDetails, CityMaster, HotelMaster } from "@/models";
+import { seoMeta } from "@/lib/seo.server";
+import FaqSection from "@/components/FaqSection";
 
 /** Tour Information fallback for packages with no inclusions/exclusions of their own (all legacy ones). */
 const UNIVERSAL_INCLUSIONS = [
@@ -92,7 +94,7 @@ export async function generateMetadata({
   const data = await getPackage(slug);
   if (!data) return { title: "Package not found | Guidewala", robots: { index: false } };
   const { pkg, cityName } = data;
-  return pageMeta({
+  return seoMeta({
     title: packageSeoTitle(pkg),
     description: packageSeoDescription(pkg, cityName),
     path: `/packages/${pkg.SLUG}`,
@@ -386,6 +388,7 @@ export default async function PackageDetailsPage({
       </div>
 
       <MobileBookBar amount={amount} priceNote={priceNote} />
+      <FaqSection path={`/packages/${pkg.SLUG}`} />
     </main>
   );
 }

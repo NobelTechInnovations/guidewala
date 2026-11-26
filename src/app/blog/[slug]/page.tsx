@@ -5,8 +5,9 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { FaArrowLeft } from "react-icons/fa";
 import { dbConnect } from "@/lib/mongodb";
 import { BlogPost } from "@/models";
-import { absUrl, jsonLd, pageMeta, truncate } from "@/lib/seo";
+import { absUrl, jsonLd, truncate } from "@/lib/seo";
 import { SITE_LOGO, SITE_NAME } from "@/lib/site";
+import { seoMeta } from "@/lib/seo.server";
 
 type PostLean = {
   TITLE: string;
@@ -39,7 +40,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) return { title: "Post not found | Guidewala", robots: { index: false } };
-  return pageMeta({
+  return seoMeta({
     title: `${truncate(post.TITLE, 46)} | Guidewala Blog`,
     description: truncate(post.EXCERPT || post.TITLE, 155),
     path: `/blog/${post.SLUG}`,

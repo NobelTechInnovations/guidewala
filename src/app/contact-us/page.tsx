@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
 import ContactForm from "@/components/ContactForm";
 import { SOCIAL_LINKS } from "@/lib/site";
-import { pageMeta } from "@/lib/seo";
+import { seoMeta } from "@/lib/seo.server";
+import FaqSection from "@/components/FaqSection";
 
-export const metadata: Metadata = pageMeta({
-  title: "Contact Us | Guidewala",
-  description: "Get in touch with Guidewala — we respond within 24 hours.",
-  path: "/contact-us",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return seoMeta({
+    title: "Contact Us | Guidewala",
+    description: "Get in touch with Guidewala — we respond within 24 hours.",
+    path: "/contact-us",
+  });
+}
 
 const SOCIALS = [
   { Icon: FaFacebookF, label: "Facebook", href: SOCIAL_LINKS.facebook },
@@ -95,6 +98,7 @@ export default function ContactUsPage() {
           </div>
         </div>
       </div>
+      <FaqSection path="/contact-us" />
     </main>
   );
 }
