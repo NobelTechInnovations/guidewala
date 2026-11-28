@@ -20,6 +20,7 @@ import {
   FaAddressCard,
   FaMailBulk,
   FaSearch,
+  FaSuitcaseRolling,
   FaSignOutAlt,
   FaBars,
   FaTimes,
@@ -37,6 +38,7 @@ const NAV: NavGroup[] = [
   {
     title: "Bookings & Leads",
     items: [
+      { href: "/admin/tour-inquiries", label: "Tour Package Inquiries", icon: FaSuitcaseRolling },
       { href: "/admin/bookings/guide", label: "Guide Bookings", icon: FaBook },
       { href: "/admin/bookings/taxi", label: "Taxi Bookings", icon: FaTaxi },
       { href: "/admin/bookings/hotel", label: "Hotel Bookings", icon: FaBed },
