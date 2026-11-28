@@ -107,6 +107,22 @@ export const DEFAULT_TEMPLATES: TemplateDefault[] = [
     variables: ["name", "email", "phone"],
   },
   {
+    key: "TOUR_INQUIRY_ADMIN",
+    label: "Tour Package Enquiry — Admin Notification",
+    description: "Sent to the Guidewala team when someone sends the short enquiry form on a tour package page.",
+    subject: "New tour enquiry: {{pkgTitle}} — {{name}}",
+    bodyHtml: `
+      <h3>New Tour Package Enquiry</h3>
+      <p><strong>Package:</strong> <a href="{{pkgUrl}}">{{pkgTitle}}</a></p>
+      <p><strong>Name:</strong> {{name}}</p>
+      <p><strong>Phone:</strong> {{phone}}</p>
+      <p><strong>Travel Date:</strong> {{travelDate}}</p>
+      <p><strong>Persons:</strong> {{persons}}</p>
+      <p>Also listed in Admin → Tour Package Inquiries.</p>
+    `,
+    variables: ["name", "phone", "travelDate", "persons", "pkgTitle", "pkgUrl"],
+  },
+  {
     key: "GUIDE_BOOKING_ADMIN",
     label: "Guide Booking — Admin Notification",
     description: "Sent to the Guidewala team for every new guide-tour booking enquiry.",

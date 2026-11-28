@@ -21,3 +21,4 @@ export { default as ContactInquiry } from "./ContactInquiry";
 export { default as EmailTemplate } from "./EmailTemplate";
 export { default as Voucher } from "./Voucher";
 export { SeoLink, SeoPage, Faq, SiteSetting } from "./Seo";
+export { default as TourInquiry } from "./TourInquiry";

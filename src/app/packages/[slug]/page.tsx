@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import { FaShieldAlt, FaWallet } from "react-icons/fa";
 import GuideBookingForm from "@/components/booking/GuideBookingForm";
+import TourInquiryForm from "@/components/booking/TourInquiryForm";
 import Gallery from "@/components/package/Gallery";
 import InfoTabs, { type InfoTab } from "@/components/package/InfoTabs";
 import ItineraryDays, { type DayView } from "@/components/package/ItineraryDays";
@@ -367,7 +368,12 @@ export default async function PackageDetailsPage({
               <h2 id="book-title" className="mb-5 font-display text-2xl font-semibold text-slate-900">
                 Book this tour
               </h2>
-              <GuideBookingForm pkgId={pkg.PKG_ID} pkgAmount={amount} hotels={hotels} cancellationPolicy={policy} />
+              {/* Tour packages take a short enquiry (saved with the package link); guide services keep the full booking form. */}
+              {isGuide ? (
+                <GuideBookingForm pkgId={pkg.PKG_ID} pkgAmount={amount} hotels={hotels} cancellationPolicy={policy} />
+              ) : (
+                <TourInquiryForm pkgId={pkg.PKG_ID} cancellationPolicy={policy} />
+              )}
             </section>
 
             {related.length > 0 && (
